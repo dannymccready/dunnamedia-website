@@ -368,24 +368,27 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 						<div class="inner">
 							<h2 class="major">Get in touch</h2>
 							<p>Cras mattis ante fermentum, malesuada neque vitae, eleifend erat. Phasellus non pulvinar erat. Fusce tincidunt, nisl eget mattis egestas, purus ipsum consequat orci, sit amet lobortis lorem lacus in tellus. Sed ac elementum arcu. Quisque placerat auctor laoreet.</p>
-							<form method="post" action="#">
+							<form method="post" action="#" id="contact-form">
 								<div class="fields">
 									<div class="field">
 										<label for="name">Name</label>
-										<input type="text" name="name" id="name" />
+										<input type="text" name="name" id="contact-name" required />
 									</div>
 									<div class="field">
 										<label for="email">Email</label>
-										<input type="email" name="email" id="email" />
+										<input type="email" name="email" id="contact-email" required />
 									</div>
 									<div class="field">
 										<label for="message">Message</label>
-										<textarea name="message" id="message" rows="4"></textarea>
+										<textarea name="message" id="contact-message" rows="4" required></textarea>
 									</div>
 								</div>
 								<ul class="actions">
 									<li><input type="submit" value="Send Message" /></li>
 								</ul>
+								<div id="contact-success" style="display: none; color: #48bb78; font-weight: 600; margin-top: 15px; text-align: center;">
+									✅ Message sent successfully! We'll get back to you soon.
+								</div>
 							</form>
 							<ul class="contact">
 								<li class="icon solid fa-home">
@@ -592,6 +595,36 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 		      }, 3000);
 		    }
 		  });
+
+		  // Contact form handling
+		  const contactForm = document.getElementById('contact-form');
+		  if (contactForm) {
+		    contactForm.addEventListener('submit', function(e) {
+		      e.preventDefault();
+		      
+		      const formData = {
+		        name: document.getElementById('contact-name').value,
+		        email: document.getElementById('contact-email').value,
+		        message: document.getElementById('contact-message').value,
+		        source: 'Elements Page',
+		        submissionDate: new Date().toISOString()
+		      };
+		      
+		      // Save to localStorage
+		      const existingContacts = JSON.parse(localStorage.getItem('contactSubmissions')) || [];
+		      existingContacts.push(formData);
+		      localStorage.setItem('contactSubmissions', JSON.stringify(existingContacts));
+		      
+		      // Show success message
+		      document.getElementById('contact-success').style.display = 'block';
+		      contactForm.reset();
+		      
+		      // Hide success message after 5 seconds
+		      setTimeout(() => {
+		        document.getElementById('contact-success').style.display = 'none';
+		      }, 5000);
+		    });
+		  }
 		});
 		</script>
 

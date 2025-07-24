@@ -222,10 +222,25 @@
       cursor: pointer;
       transition: all 0.3s ease;
     }
-    .btn-delete:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
-    }
+         .btn-delete:hover {
+       transform: translateY(-1px);
+       box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
+     }
+     .btn-read {
+       background: linear-gradient(135deg, #4299e1, #3182ce);
+       color: white;
+       border: none;
+       padding: 8px 16px;
+       border-radius: 8px;
+       font-size: 12px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.3s ease;
+     }
+     .btn-read:hover {
+       transform: translateY(-1px);
+       box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
+     }
     .no-submissions {
       text-align: center;
       color: #4a5568;
@@ -326,26 +341,36 @@
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-number" id="pending-count">0</span>
-        <span class="stat-label">📋 Pending Review</span>
+          <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-number" id="pending-count">0</span>
+          <span class="stat-label">📋 Pending Review</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="approved-count">0</span>
+          <span class="stat-label">✅ Approved</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="deleted-count">0</span>
+          <span class="stat-label">🗑️ Deleted</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="today-count">0</span>
+          <span class="stat-label">📅 Today's Submissions</span>
+        </div>
+		<br>
+        <div class="stat-card">
+          <span class="stat-number" id="contact-unread">0</span>
+          <span class="stat-label">📧 Unread Messages</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="contact-read">0</span>
+          <span class="stat-label">👁️ Read Messages</span>
+        </div>
       </div>
-      <div class="stat-card">
-        <span class="stat-number" id="approved-count">0</span>
-        <span class="stat-label">✅ Approved</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-number" id="deleted-count">0</span>
-        <span class="stat-label">🗑️ Deleted</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-number" id="today-count">0</span>
-        <span class="stat-label">📅 Today's Submissions</span>
-      </div>
-    </div>
 
-    <div class="submissions-section">
+    <!-- Promo Submissions Section -->
+    <div class="submissions-section" style="margin-bottom: 30px;">
       <div class="tabs-header">
         <div class="tab active" onclick="switchTab('pending')">📋 Pending Review</div>
         <div class="tab" onclick="switchTab('approved')">✅ Approved</div>
@@ -373,6 +398,36 @@
         </div>
       </div>
     </div>
+
+    <!-- Contact Forms Section -->
+    <div class="submissions-section">
+      <div class="tabs-header">
+        <div class="tab active" onclick="switchContactTab('unread')">📧 Unread Messages</div>
+        <div class="tab" onclick="switchContactTab('read')">👁️ Read Messages</div>
+        <div class="tab" onclick="switchContactTab('contact-deleted')">🗑️ Deleted Messages</div>
+      </div>
+      
+      <div id="unread-tab" class="tab-content active">
+        <h3 style="margin-top: 0; color: #2d3748; font-size: 1.25rem;">Unread Contact Messages</h3>
+        <div id="unread-messages">
+          <div class="no-submissions">Loading messages...</div>
+        </div>
+      </div>
+      
+      <div id="read-tab" class="tab-content">
+        <h3 style="margin-top: 0; color: #2d3748; font-size: 1.25rem;">Read Contact Messages</h3>
+        <div id="read-messages">
+          <div class="no-submissions">No read messages yet.</div>
+        </div>
+      </div>
+      
+      <div id="contact-deleted-tab" class="tab-content">
+        <h3 style="margin-top: 0; color: #2d3748; font-size: 1.25rem;">Deleted Contact Messages</h3>
+        <div id="deleted-messages">
+          <div class="no-submissions">No deleted messages yet.</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -386,9 +441,21 @@
     }
 
     function switchTab(tabName) {
-      // Remove active class from all tabs and content
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      // Remove active class from all tabs and content in promo section
+      const promoSection = document.querySelector('.submissions-section');
+      promoSection.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      promoSection.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      // Add active class to clicked tab and corresponding content
+      event.target.classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+    }
+
+    function switchContactTab(tabName) {
+      // Remove active class from all tabs and content in contact section
+      const contactSection = document.querySelectorAll('.submissions-section')[1];
+      contactSection.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      contactSection.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       
       // Add active class to clicked tab and corresponding content
       event.target.classList.add('active');
@@ -431,6 +498,117 @@
         
         loadSubmissions();
       }
+    }
+
+    function markAsRead(index) {
+      const unreadMessages = JSON.parse(localStorage.getItem('contactSubmissions')) || [];
+      const readMessages = JSON.parse(localStorage.getItem('readContactSubmissions')) || [];
+      
+      if (unreadMessages[index]) {
+        const message = unreadMessages[index];
+        message.status = 'read';
+        message.actionDate = new Date().toISOString();
+        
+        readMessages.push(message);
+        unreadMessages.splice(index, 1);
+        
+        localStorage.setItem('contactSubmissions', JSON.stringify(unreadMessages));
+        localStorage.setItem('readContactSubmissions', JSON.stringify(readMessages));
+        
+        loadContactMessages();
+      }
+    }
+
+    function deleteContactMessage(index, fromRead = false) {
+      const sourceMessages = fromRead ? 
+        JSON.parse(localStorage.getItem('readContactSubmissions')) || [] :
+        JSON.parse(localStorage.getItem('contactSubmissions')) || [];
+      const deletedMessages = JSON.parse(localStorage.getItem('deletedContactSubmissions')) || [];
+      
+      if (sourceMessages[index]) {
+        const message = sourceMessages[index];
+        message.status = 'deleted';
+        message.actionDate = new Date().toISOString();
+        
+        deletedMessages.push(message);
+        sourceMessages.splice(index, 1);
+        
+        if (fromRead) {
+          localStorage.setItem('readContactSubmissions', JSON.stringify(sourceMessages));
+        } else {
+          localStorage.setItem('contactSubmissions', JSON.stringify(sourceMessages));
+        }
+        localStorage.setItem('deletedContactSubmissions', JSON.stringify(deletedMessages));
+        
+        loadContactMessages();
+      }
+    }
+
+    function renderContactTable(messages, containerId, showActions = false, showStatus = false, fromRead = false) {
+      const container = document.getElementById(containerId);
+      
+      if (messages.length === 0) {
+        container.innerHTML = '<div class="no-submissions">No messages in this category.</div>';
+        return;
+      }
+
+      let tableHTML = `
+        <table class="submissions-table">
+          <thead>
+            <tr>
+              <th>📅 Date</th>
+              <th>👤 Name</th>
+              <th>📧 Email</th>
+              <th>📝 Message</th>
+              <th>🌐 Source Page</th>
+              ${showStatus ? '<th>📊 Status</th>' : ''}
+              ${showActions ? '<th>⚡ Actions</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      messages.forEach((message, index) => {
+        const date = new Date(message.submissionDate).toLocaleDateString();
+        const time = new Date(message.submissionDate).toLocaleTimeString();
+        
+        let statusBadge = '';
+        if (showStatus && message.status) {
+          const statusClass = message.status === 'read' ? 'status-approved' : 'status-deleted';
+          const actionDate = message.actionDate ? new Date(message.actionDate).toLocaleDateString() : '';
+          statusBadge = `<div><span class="status-badge ${statusClass}">${message.status}</span><br><small class="date-cell">${actionDate}</small></div>`;
+        }
+
+        const actions = showActions ? `
+          <td>
+            <div class="action-buttons">
+              ${!fromRead ? `
+                <button class="btn-read" onclick="markAsRead(${index})" title="Mark as Read">
+                  👁️ Mark Read
+                </button>
+              ` : ''}
+              <button class="btn-delete" onclick="deleteContactMessage(${index}, ${fromRead})" title="Delete Message">
+                🗑️ Delete
+              </button>
+            </div>
+          </td>
+        ` : '';
+
+        tableHTML += `
+          <tr>
+            <td class="date-cell">${date}<br><small>${time}</small></td>
+            <td class="company-info">${message.name}</td>
+            <td>${message.email}</td>
+            <td style="max-width: 300px; word-wrap: break-word;">${message.message}</td>
+            <td><span class="submission-type type-sponsor">${message.source}</span></td>
+            ${showStatus ? `<td>${statusBadge}</td>` : ''}
+            ${showActions ? actions : ''}
+          </tr>
+        `;
+      });
+
+      tableHTML += '</tbody></table>';
+      container.innerHTML = tableHTML;
     }
 
     function renderSubmissionsTable(submissions, containerId, showActions = false, showStatus = false) {
@@ -512,6 +690,21 @@
       container.innerHTML = tableHTML;
     }
 
+    function loadContactMessages() {
+      const unreadMessages = JSON.parse(localStorage.getItem('contactSubmissions')) || [];
+      const readMessages = JSON.parse(localStorage.getItem('readContactSubmissions')) || [];
+      const deletedMessages = JSON.parse(localStorage.getItem('deletedContactSubmissions')) || [];
+      
+      // Update contact stats
+      document.getElementById('contact-unread').textContent = unreadMessages.length;
+      document.getElementById('contact-read').textContent = readMessages.length;
+      
+      // Render contact tables
+      renderContactTable(unreadMessages.reverse(), 'unread-messages', true, false, false);
+      renderContactTable(readMessages.reverse(), 'read-messages', true, true, true);
+      renderContactTable(deletedMessages.reverse(), 'deleted-messages', false, true, false);
+    }
+
     function loadSubmissions() {
       const pendingSubmissions = JSON.parse(localStorage.getItem('promoSubmissions')) || [];
       const approvedSubmissions = JSON.parse(localStorage.getItem('approvedSubmissions')) || [];
@@ -532,6 +725,9 @@
       renderSubmissionsTable(pendingSubmissions.reverse(), 'pending-submissions', true, false);
       renderSubmissionsTable(approvedSubmissions.reverse(), 'approved-submissions', false, true);
       renderSubmissionsTable(deletedSubmissions.reverse(), 'deleted-submissions', false, true);
+      
+      // Load contact messages
+      loadContactMessages();
     }
 
     // Load submissions on page load
