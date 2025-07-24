@@ -1,0 +1,541 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Admin Dashboard - Dun Na Media</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .admin-container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .admin-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .admin-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-actions {
+      display: flex;
+      gap: 15px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.45);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.9);
+      color: #4a5568;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    .btn-secondary:hover {
+      background: white;
+      transform: translateY(-1px);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      color: #4a5568;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.875rem;
+    }
+    .submissions-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+    }
+    .tabs-header {
+      display: flex;
+      background: rgba(0, 0, 0, 0.03);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .tab {
+      flex: 1;
+      padding: 20px;
+      text-align: center;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      color: #4a5568;
+    }
+    .tab.active {
+      background: white;
+      color: #667eea;
+    }
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    .tab-content {
+      padding: 30px;
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .submissions-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .submissions-table th {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      padding: 18px 15px;
+      text-align: left;
+      font-weight: 700;
+      color: #2d3748;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .submissions-table td {
+      padding: 18px 15px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #2d3748;
+      vertical-align: top;
+    }
+    .submissions-table tr:hover {
+      background: #f8fafc;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-approve {
+      background: linear-gradient(135deg, #48bb78, #38a169);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-approve:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+    }
+    .btn-delete {
+      background: linear-gradient(135deg, #f56565, #e53e3e);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-delete:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
+    }
+    .no-submissions {
+      text-align: center;
+      color: #4a5568;
+      font-style: italic;
+      padding: 60px 40px;
+      background: #f8fafc;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    .submission-type {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .type-sponsor {
+      background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
+      color: #22543d;
+    }
+    .type-advert {
+      background: linear-gradient(135deg, #bee3f8, #90cdf4);
+      color: #1a365d;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .status-approved {
+      background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
+      color: #22543d;
+    }
+    .status-deleted {
+      background: linear-gradient(135deg, #fed7d7, #feb2b2);
+      color: #742a2a;
+    }
+    .date-cell {
+      font-size: 0.875rem;
+      color: #4a5568;
+      font-weight: 500;
+    }
+    .company-info {
+      font-weight: 600;
+      color: #2d3748;
+    }
+    .company-address {
+      font-size: 0.875rem;
+      color: #718096;
+      margin-top: 4px;
+    }
+    @media (max-width: 768px) {
+      .admin-header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+      .header-actions {
+        flex-direction: column;
+        width: 100%;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+      .tabs-header {
+        flex-direction: column;
+      }
+      .submissions-table {
+        font-size: 0.875rem;
+      }
+      .submissions-table th,
+      .submissions-table td {
+        padding: 12px 10px;
+      }
+      .action-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1 class="admin-title">🎛️ Admin Dashboard</h1>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="loadSubmissions()">
+          🔄 Refresh Data
+        </button>
+        <a href="index.html" class="btn btn-primary" onclick="logout()">
+          🚪 Logout
+        </a>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-number" id="pending-count">0</span>
+        <span class="stat-label">📋 Pending Review</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number" id="approved-count">0</span>
+        <span class="stat-label">✅ Approved</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number" id="deleted-count">0</span>
+        <span class="stat-label">🗑️ Deleted</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number" id="today-count">0</span>
+        <span class="stat-label">📅 Today's Submissions</span>
+      </div>
+    </div>
+
+    <div class="submissions-section">
+      <div class="tabs-header">
+        <div class="tab active" onclick="switchTab('pending')">📋 Pending Review</div>
+        <div class="tab" onclick="switchTab('approved')">✅ Approved</div>
+        <div class="tab" onclick="switchTab('deleted')">🗑️ Deleted</div>
+      </div>
+      
+      <div id="pending-tab" class="tab-content active">
+        <h3 style="margin-top: 0; color: #2d3748; font-size: 1.25rem;">Submissions Awaiting Review</h3>
+        <div id="pending-submissions">
+          <div class="no-submissions">Loading submissions...</div>
+        </div>
+      </div>
+      
+      <div id="approved-tab" class="tab-content">
+        <h3 style="margin-top: 0; color: #2d3748; font-size: 1.25rem;">Approved Submissions</h3>
+        <div id="approved-submissions">
+          <div class="no-submissions">No approved submissions yet.</div>
+        </div>
+      </div>
+      
+      <div id="deleted-tab" class="tab-content">
+        <h3 style="margin-top: 0; color: #2d3748; font-size: 1.25rem;">Deleted Submissions</h3>
+        <div id="deleted-submissions">
+          <div class="no-submissions">No deleted submissions yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    if (!sessionStorage.getItem('isAdminAuthenticated')) {
+      window.location.href = 'index.html';
+    }
+
+    function logout() {
+      sessionStorage.removeItem('isAdminAuthenticated');
+    }
+
+    function switchTab(tabName) {
+      // Remove active class from all tabs and content
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      // Add active class to clicked tab and corresponding content
+      event.target.classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+    }
+
+    function approveSubmission(index) {
+      const submissions = JSON.parse(localStorage.getItem('promoSubmissions')) || [];
+      const approvedSubmissions = JSON.parse(localStorage.getItem('approvedSubmissions')) || [];
+      
+      if (submissions[index]) {
+        const submission = submissions[index];
+        submission.status = 'approved';
+        submission.actionDate = new Date().toISOString();
+        
+        approvedSubmissions.push(submission);
+        submissions.splice(index, 1);
+        
+        localStorage.setItem('promoSubmissions', JSON.stringify(submissions));
+        localStorage.setItem('approvedSubmissions', JSON.stringify(approvedSubmissions));
+        
+        loadSubmissions();
+      }
+    }
+
+    function deleteSubmission(index) {
+      const submissions = JSON.parse(localStorage.getItem('promoSubmissions')) || [];
+      const deletedSubmissions = JSON.parse(localStorage.getItem('deletedSubmissions')) || [];
+      
+      if (submissions[index]) {
+        const submission = submissions[index];
+        submission.status = 'deleted';
+        submission.actionDate = new Date().toISOString();
+        
+        deletedSubmissions.push(submission);
+        submissions.splice(index, 1);
+        
+        localStorage.setItem('promoSubmissions', JSON.stringify(submissions));
+        localStorage.setItem('deletedSubmissions', JSON.stringify(deletedSubmissions));
+        
+        loadSubmissions();
+      }
+    }
+
+    function renderSubmissionsTable(submissions, containerId, showActions = false, showStatus = false) {
+      const container = document.getElementById(containerId);
+      
+      if (submissions.length === 0) {
+        container.innerHTML = '<div class="no-submissions">No submissions in this category.</div>';
+        return;
+      }
+
+      let tableHTML = `
+        <table class="submissions-table">
+          <thead>
+            <tr>
+              <th>📅 Date</th>
+              <th>🏢 Company</th>
+              <th>👤 Contact</th>
+              <th>📧 Email</th>
+              <th>📞 Phone</th>
+              <th>🏷️ Type</th>
+              <th>📝 Details</th>
+              ${showStatus ? '<th>📊 Status</th>' : ''}
+              ${showActions ? '<th>⚡ Actions</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      submissions.forEach((submission, index) => {
+        const date = new Date(submission.submissionDate).toLocaleDateString();
+        const time = new Date(submission.submissionDate).toLocaleTimeString();
+        const typeClass = submission.applicationType === 'sponsor' ? 'type-sponsor' : 'type-advert';
+        
+        let details = '';
+        if (submission.applicationType === 'sponsor') {
+          details = `<strong>Company:</strong> ${submission.sponsorName || 'N/A'}<br>
+                     <strong>Tagline:</strong> ${submission.tagline || 'N/A'}`;
+        } else if (submission.applicationType === 'advert') {
+          details = `<strong>Ad Description:</strong> ${submission.advertDescription || 'N/A'}`;
+        }
+
+        let statusBadge = '';
+        if (showStatus && submission.status) {
+          const statusClass = submission.status === 'approved' ? 'status-approved' : 'status-deleted';
+          const actionDate = submission.actionDate ? new Date(submission.actionDate).toLocaleDateString() : '';
+          statusBadge = `<div><span class="status-badge ${statusClass}">${submission.status}</span><br><small class="date-cell">${actionDate}</small></div>`;
+        }
+
+        tableHTML += `
+          <tr>
+            <td class="date-cell">${date}<br><small>${time}</small></td>
+            <td>
+              <div class="company-info">${submission.companyName}</div>
+              <div class="company-address">${submission.companyAddress}</div>
+            </td>
+            <td>${submission.contactName}</td>
+            <td>${submission.email}</td>
+            <td>${submission.phone}</td>
+            <td><span class="submission-type ${typeClass}">${submission.applicationType}</span></td>
+            <td>${details}</td>
+            ${showStatus ? `<td>${statusBadge}</td>` : ''}
+            ${showActions ? `
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-approve" onclick="approveSubmission(${index})" title="Approve Submission">
+                    ✅ Approve
+                  </button>
+                  <button class="btn-delete" onclick="deleteSubmission(${index})" title="Delete Submission">
+                    🗑️ Delete
+                  </button>
+                </div>
+              </td>
+            ` : ''}
+          </tr>
+        `;
+      });
+
+      tableHTML += '</tbody></table>';
+      container.innerHTML = tableHTML;
+    }
+
+    function loadSubmissions() {
+      const pendingSubmissions = JSON.parse(localStorage.getItem('promoSubmissions')) || [];
+      const approvedSubmissions = JSON.parse(localStorage.getItem('approvedSubmissions')) || [];
+      const deletedSubmissions = JSON.parse(localStorage.getItem('deletedSubmissions')) || [];
+      
+      // Update stats
+      const today = new Date().toDateString();
+      const todayCount = pendingSubmissions.filter(s => 
+        new Date(s.submissionDate).toDateString() === today
+      ).length;
+
+      document.getElementById('pending-count').textContent = pendingSubmissions.length;
+      document.getElementById('approved-count').textContent = approvedSubmissions.length;
+      document.getElementById('deleted-count').textContent = deletedSubmissions.length;
+      document.getElementById('today-count').textContent = todayCount;
+      
+      // Render tables
+      renderSubmissionsTable(pendingSubmissions.reverse(), 'pending-submissions', true, false);
+      renderSubmissionsTable(approvedSubmissions.reverse(), 'approved-submissions', false, true);
+      renderSubmissionsTable(deletedSubmissions.reverse(), 'deleted-submissions', false, true);
+    }
+
+    // Load submissions on page load
+    document.addEventListener('DOMContentLoaded', loadSubmissions);
+  </script>
+</body>
+</html>

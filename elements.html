@@ -19,7 +19,7 @@
 
 				<!-- Header -->
 					<header id="header">
-						<h1><a href="index.html">Solid State</a></h1>
+						<h1><a href="index.html">Dun Na Media</a></h1>
 						<nav>
 							<a href="#menu">Menu</a>
 						</nav>
@@ -31,10 +31,12 @@
 							<h2>Menu</h2>
 							<ul class="links">
 								<li><a href="index.html">Home</a></li>
-								<li><a href="generic.html">Generic</a></li>
-								<li><a href="elements.html">Elements</a></li>
-								<li><a href="#">Log In</a></li>
-								<li><a href="#">Sign Up</a></li>
+								<li><a href="toolboxradio.html">ToolBox Radio</a></li>
+								<li><a href="cmsdesk.html">CMS Desk</a></li>
+								<li><a href="advertising.html">Advertising</a></li>
+								<li><a href="promo.html">Free Advertising Offer</a></li>
+								<li><a href="#" id="login-trigger">Log In</a></li>
+								<!-- <li><a href="#">Sign Up</a></li> -->
 							</ul>
 							<a href="#" class="close">Close</a>
 						</div>
@@ -412,6 +414,186 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+
+		<!-- Login Popup Modal -->
+		<div id="login-modal" class="login-modal" style="display: none;">
+		  <div class="login-modal-overlay"></div>
+		  <div class="login-modal-content">
+		    <span class="login-modal-close">&times;</span>
+		    <h2>Admin Login</h2>
+		    <p>Enter your credentials to access the admin panel</p>
+		    <form id="login-popup-form">
+		      <div class="login-field">
+		        <label for="popup-username">Username</label>
+		        <input type="text" id="popup-username" name="username" required />
+		      </div>
+		      <div class="login-field">
+		        <label for="popup-password">Password</label>
+		        <input type="password" id="popup-password" name="password" required />
+		      </div>
+		      <button type="submit" class="login-submit-btn">Login</button>
+		      <div id="login-error" class="login-error" style="display: none;">Invalid username or password</div>
+		    </form>
+		  </div>
+		</div>
+
+		<style>
+		.login-modal {
+		  position: fixed;
+		  top: 0;
+		  left: 0;
+		  width: 100%;
+		  height: 100%;
+		  z-index: 10000;
+		}
+		.login-modal-overlay {
+		  position: absolute;
+		  top: 0;
+		  left: 0;
+		  width: 100%;
+		  height: 100%;
+		  background: rgba(0, 0, 0, 0.7);
+		  backdrop-filter: blur(5px);
+		}
+		.login-modal-content {
+		  position: absolute;
+		  top: 50%;
+		  left: 50%;
+		  transform: translate(-50%, -50%);
+		  background: white;
+		  padding: 40px;
+		  border-radius: 16px;
+		  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+		  max-width: 400px;
+		  width: 90%;
+		  text-align: center;
+		}
+		.login-modal-close {
+		  position: absolute;
+		  top: 15px;
+		  right: 20px;
+		  font-size: 28px;
+		  font-weight: bold;
+		  color: #aaa;
+		  cursor: pointer;
+		  line-height: 1;
+		}
+		.login-modal-close:hover {
+		  color: #000;
+		}
+		.login-modal-content h2 {
+		  font-size: 2rem;
+		  font-weight: 600;
+		  margin-bottom: 8px;
+		  color: #1a202c;
+		}
+		.login-modal-content p {
+		  color: #4a5568;
+		  margin-bottom: 30px;
+		}
+		.login-field {
+		  margin-bottom: 20px;
+		  text-align: left;
+		}
+		.login-field label {
+		  display: block;
+		  font-weight: 600;
+		  color: #2d3748;
+		  margin-bottom: 8px;
+		}
+		.login-field input {
+		  width: 100%;
+		  padding: 16px 20px;
+		  border: 3px solid #000000;
+		  border-radius: 8px;
+		  font-size: 1.1rem;
+		  background: #ffffff;
+		  color: #000000;
+		  box-sizing: border-box;
+		}
+		.login-field input:focus {
+		  outline: none;
+		  border-color: #667eea;
+		  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.25);
+		}
+		.login-submit-btn {
+		  width: 100%;
+		  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		  color: white;
+		  border: none;
+		  padding: 16px 40px;
+		  border-radius: 8px;
+		  font-size: 1rem;
+		  font-weight: 600;
+		  cursor: pointer;
+		  transition: transform 0.2s, box-shadow 0.2s;
+		  margin-top: 10px;
+		}
+		.login-submit-btn:hover {
+		  transform: translateY(-2px);
+		  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+		}
+		.login-error {
+		  color: #e53e3e;
+		  margin-top: 15px;
+		  font-weight: 500;
+		}
+		</style>
+
+		<script>
+		// Login popup functionality
+		document.addEventListener('DOMContentLoaded', function() {
+		  const loginModal = document.getElementById('login-modal');
+		  const loginModalClose = document.querySelector('.login-modal-close');
+		  const loginModalOverlay = document.querySelector('.login-modal-overlay');
+		  const loginForm = document.getElementById('login-popup-form');
+		  const loginError = document.getElementById('login-error');
+
+		  // Show login modal when "Log In" menu item is clicked
+		  const loginTrigger = document.getElementById('login-trigger');
+		  if (loginTrigger) {
+		    loginTrigger.addEventListener('click', function(e) {
+		      e.preventDefault();
+		      loginModal.style.display = 'block';
+		      document.body.style.overflow = 'hidden';
+		    });
+		  }
+
+		  // Close modal when X is clicked
+		  loginModalClose.addEventListener('click', function() {
+		    loginModal.style.display = 'none';
+		    document.body.style.overflow = 'auto';
+		    loginForm.reset();
+		    loginError.style.display = 'none';
+		  });
+
+		  // Close modal when overlay is clicked
+		  loginModalOverlay.addEventListener('click', function() {
+		    loginModal.style.display = 'none';
+		    document.body.style.overflow = 'auto';
+		    loginForm.reset();
+		    loginError.style.display = 'none';
+		  });
+
+		  // Handle login form submission
+		  loginForm.addEventListener('submit', function(e) {
+		    e.preventDefault();
+		    
+		    const username = document.getElementById('popup-username').value;
+		    const password = document.getElementById('popup-password').value;
+		    
+		    if (username === 'danny' && password === '3862') {
+		      sessionStorage.setItem('isAdminAuthenticated', 'true');
+		      window.location.href = 'admin.html';
+		    } else {
+		      loginError.style.display = 'block';
+		      setTimeout(() => {
+		        loginError.style.display = 'none';
+		      }, 3000);
+		    }
+		  });
+		});
+		</script>
 
 	</body>
 </html>
