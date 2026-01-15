@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo Construction Intranet</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <button class="btn btn--primary floating-edit" id="toggleEditBtn">Edit</button>
+
+      <div class="toolbox toolbox--hidden" id="toolbox" aria-label="Editing toolbox">
+        <div class="toolbox__handle" id="toolboxHandle">
+          <div class="toolbox__title">Edit tools</div>
+          <div class="toolbox__sub">Add widgets</div>
+        </div>
+        <div class="toolbox__body">
+          <div class="toolbox__group">
+            <button class="toolbtn" data-add-widget="news" title="Company News" aria-label="Company News">
+              <span class="toolbtn__ico" aria-hidden="true">📰</span>
+            </button>
+            <button class="toolbtn" data-add-widget="notifications" title="Notifications" aria-label="Notifications">
+              <span class="toolbtn__ico" aria-hidden="true">🔔</span>
+            </button>
+            <button class="toolbtn" data-add-widget="documents" title="Documents" aria-label="Documents">
+              <span class="toolbtn__ico" aria-hidden="true">📁</span>
+            </button>
+            <button class="toolbtn" data-add-widget="discussions" title="Discussions" aria-label="Discussions">
+              <span class="toolbtn__ico" aria-hidden="true">💬</span>
+            </button>
+            <button class="toolbtn" data-add-widget="polls" title="Polls" aria-label="Polls">
+              <span class="toolbtn__ico" aria-hidden="true">📊</span>
+            </button>
+            <button class="toolbtn" data-add-widget="events" title="Events" aria-label="Events">
+              <span class="toolbtn__ico" aria-hidden="true">📅</span>
+            </button>
+            <button class="toolbtn" data-add-widget="button" title="Button (link)" aria-label="Button (link)">
+              <span class="toolbtn__ico" aria-hidden="true">🔗</span>
+            </button>
+            <button class="toolbtn" data-add-widget="image" title="Image (link)" aria-label="Image (link)">
+              <span class="toolbtn__ico" aria-hidden="true">🖼️</span>
+            </button>
+            <button class="toolbtn" data-add-widget="text" title="Text box" aria-label="Text box">
+              <span class="toolbtn__ico" aria-hidden="true">✍️</span>
+            </button>
+          </div>
+
+          <div class="toolbox__divider"></div>
+
+          <button class="btn btn--ghost btn--sm" id="blankPageBtn" title="Clear widgets on this page">
+            Blank page
+          </button>
+          <button class="btn btn--ghost btn--sm" id="addPageBtn" title="Add a new page">
+            Add page
+          </button>
+          <button class="btn btn--ghost btn--sm" id="cleanupBtn" title="Auto-arrange widgets to best fit">
+            Clean up
+          </button>
+          <button class="btn btn--ghost btn--sm" id="templatePageBtn" disabled title="Coming soon">
+            Use template (coming soon)
+          </button>
+
+          <div class="toolbox__divider"></div>
+
+          <div class="toolbox__section" aria-label="Pages">
+            <div class="toolbox__sectionTitle">Pages</div>
+            <div class="toolbox__pages" id="pagesList"></div>
+            <div class="toolbox__hint" style="margin-top:8px">
+              Click a page to open it. Right-click to rename.
+            </div>
+          </div>
+
+          <div class="toolbox__hint">
+            - Drag widgets to snap into place<br />
+            - No overlaps allowed<br />
+            - Delete removes selected widget
+          </div>
+        </div>
+      </div>
+
+      <main class="stage">
+        <div class="canvas" id="canvas" aria-label="Page canvas"></div>
+      </main>
+
+      <div class="modal modal--hidden" id="modal" role="dialog" aria-modal="true">
+        <div class="modal__backdrop" id="modalBackdrop"></div>
+        <div class="modal__card" role="document">
+          <div class="modal__header">
+            <div class="modal__title" id="modalTitle">Edit</div>
+            <button class="btn btn--ghost btn--sm" id="modalCloseBtn">Close</button>
+          </div>
+          <div class="modal__body" id="modalBody"></div>
+          <div class="modal__footer" id="modalFooter"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
+
