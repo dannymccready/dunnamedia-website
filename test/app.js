@@ -40,6 +40,492 @@ const DEMO = {
   ],
 };
 
+const QR_SAMPLE_DATA_URL =
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><rect width='120' height='120' fill='%23ffffff'/><rect x='6' y='6' width='36' height='36' fill='%23000'/><rect x='12' y='12' width='24' height='24' fill='%23fff'/><rect x='16' y='16' width='16' height='16' fill='%23000'/><rect x='78' y='6' width='36' height='36' fill='%23000'/><rect x='84' y='12' width='24' height='24' fill='%23fff'/><rect x='88' y='16' width='16' height='16' fill='%23000'/><rect x='6' y='78' width='36' height='36' fill='%23000'/><rect x='12' y='84' width='24' height='24' fill='%23fff'/><rect x='16' y='88' width='16' height='16' fill='%23000'/><rect x='52' y='52' width='12' height='12' fill='%23000'/><rect x='66' y='52' width='12' height='12' fill='%23000'/><rect x='52' y='66' width='12' height='12' fill='%23000'/><rect x='70' y='70' width='18' height='18' fill='%23000'/><rect x='90' y='52' width='12' height='12' fill='%23000'/><rect x='52' y='90' width='12' height='12' fill='%23000'/></svg>";
+
+const TEMPLATES = [
+  {
+    id: "tpl-modern-hub",
+    name: "Modern Hub",
+    description: "Clean executive layout with announcements, news, and quick actions.",
+    preview: {
+      rows: [
+        { cols: [3] },
+        { cols: [2, 1] },
+        { cols: [2, 1] },
+      ],
+    },
+    widgets: [
+      {
+        type: "header",
+        gx: 0,
+        gy: 0,
+        gw: WIDGET_DEFS.header.gw,
+        gh: WIDGET_DEFS.header.gh,
+        data: {
+          companyName: DEMO.company.name,
+          subtitle: "Company Intranet",
+          details: "Safety • Quality • Delivery",
+          logoText: "DC",
+          logoImageUrl: "demoicon.png",
+        },
+      },
+      {
+        type: "notifications",
+        gx: 0,
+        gy: 7,
+        gw: 18,
+        gh: 10,
+        data: {
+          items: [
+            { text: "Q1 town hall on Tuesday at 10am.", date: fmtDate(new Date()) },
+            { text: "Site access changes for Westgate project.", date: fmtDate(addDays(new Date(), -2)) },
+          ],
+        },
+      },
+      {
+        type: "news",
+        gx: 19,
+        gy: 7,
+        gw: 17,
+        gh: 14,
+        data: {
+          posts: [
+            {
+              title: "Project milestone achieved",
+              date: fmtDate(addDays(new Date(), -4)),
+              body: "Riverside Apartments Phase 1 complete ahead of schedule.",
+              imageUrl: "",
+            },
+            {
+              title: "Welcome to the new intranet",
+              date: fmtDate(new Date()),
+              body: "Find updates, documents, and team discussions in one place.",
+              imageUrl: "",
+            },
+          ],
+        },
+      },
+      {
+        type: "button",
+        gx: 0,
+        gy: 18,
+        gw: 12,
+        gh: 4,
+        data: { mode: "text", label: "HR Hub", linkType: "page", pageId: "home", url: "", imageUrl: "" },
+      },
+      {
+        type: "button",
+        gx: 13,
+        gy: 18,
+        gw: 12,
+        gh: 4,
+        data: { mode: "text", label: "Safety Docs", linkType: "url", url: "https://example.com", pageId: "home", imageUrl: "" },
+      },
+      {
+        type: "events",
+        gx: 0,
+        gy: 23,
+        gw: 22,
+        gh: 15,
+        data: {
+          month: new Date().getMonth(),
+          year: new Date().getFullYear(),
+          events: [
+            { id: rid("e"), title: "Safety Stand-down", date: isoDate(addDays(new Date(), 3)) },
+            { id: rid("e"), title: "All-hands", date: isoDate(addDays(new Date(), 12)) },
+          ],
+        },
+      },
+      {
+        type: "polls",
+        gx: 23,
+        gy: 23,
+        gw: 13,
+        gh: 11,
+        data: {
+          question: "Which training should we run next?",
+          options: ["First aid", "Fire marshal", "Manual handling"],
+          votes: {},
+        },
+      },
+    ],
+  },
+  {
+    id: "tpl-project-focus",
+    name: "Project Focus",
+    description: "Project-centric layout with image banner, documents, and discussions.",
+    preview: {
+      rows: [
+        { cols: [3] },
+        { cols: [2, 1] },
+        { cols: [2, 1] },
+      ],
+    },
+    widgets: [
+      {
+        type: "header",
+        gx: 0,
+        gy: 0,
+        gw: WIDGET_DEFS.header.gw,
+        gh: WIDGET_DEFS.header.gh,
+        data: {
+          companyName: DEMO.company.name,
+          subtitle: "Project Operations",
+          details: "Build smarter • Build safer",
+          logoText: "DC",
+          logoImageUrl: "demoicon.png",
+        },
+      },
+      {
+        type: "image",
+        gx: 0,
+        gy: 7,
+        gw: 22,
+        gh: 12,
+        data: {
+          imageUrl: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1200&auto=format&fit=crop",
+          linkType: "url",
+          url: "https://example.com",
+          pageId: "home",
+        },
+      },
+      {
+        type: "documents",
+        gx: 23,
+        gy: 7,
+        gw: 13,
+        gh: 11,
+        data: {
+          links: DEMO.documents.map((d) => ({ docId: d.id })),
+        },
+      },
+      {
+        type: "discussions",
+        gx: 0,
+        gy: 20,
+        gw: 22,
+        gh: 14,
+        data: {
+          threads: [
+            {
+              id: rid("t"),
+              title: "Weekly site update",
+              posts: [
+                { user: "Hannah (HR)", text: "Share blockers or risks for this week.", date: fmtDate(new Date()) },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "notifications",
+        gx: 23,
+        gy: 20,
+        gw: 13,
+        gh: 10,
+        data: {
+          items: [
+            { text: "Permit renewals due Friday.", date: fmtDate(addDays(new Date(), -1)) },
+            { text: "Equipment inspection window this Thursday.", date: fmtDate(addDays(new Date(), 2)) },
+          ],
+        },
+      },
+      {
+        type: "text",
+        gx: 23,
+        gy: 31,
+        gw: 13,
+        gh: 7,
+        data: {
+          html: "<b>Project directory</b><br/>Find site contacts, plans, and the latest QA docs here.",
+          fontSize: 13,
+          color: "#1f2937",
+        },
+      },
+    ],
+  },
+  {
+    id: "tpl-people-culture",
+    name: "People & Culture",
+    description: "HR-first layout with announcements, policies, and culture updates.",
+    preview: {
+      rows: [
+        { cols: [3] },
+        { cols: [1, 1, 1] },
+        { cols: [2, 1] },
+      ],
+    },
+    widgets: [
+      {
+        type: "header",
+        gx: 0,
+        gy: 0,
+        gw: WIDGET_DEFS.header.gw,
+        gh: WIDGET_DEFS.header.gh,
+        data: {
+          companyName: DEMO.company.name,
+          subtitle: "People & Culture",
+          details: "Together • Respect • Growth",
+          logoText: "DC",
+          logoImageUrl: "demoicon.png",
+        },
+      },
+      {
+        type: "notifications",
+        gx: 0,
+        gy: 7,
+        gw: 18,
+        gh: 10,
+        data: {
+          items: [
+            { text: "Performance review window opens Monday.", date: fmtDate(new Date()) },
+            { text: "Employee assistance program update.", date: fmtDate(addDays(new Date(), -3)) },
+          ],
+        },
+      },
+      {
+        type: "news",
+        gx: 19,
+        gy: 7,
+        gw: 17,
+        gh: 14,
+        data: {
+          posts: [
+            {
+              title: "Wellbeing week",
+              date: fmtDate(addDays(new Date(), -1)),
+              body: "Join sessions on resilience, ergonomics, and mental health.",
+              imageUrl: "",
+            },
+            {
+              title: "Welcome new starters",
+              date: fmtDate(new Date()),
+              body: "Say hello to the latest additions across our sites.",
+              imageUrl: "",
+            },
+          ],
+        },
+      },
+      {
+        type: "documents",
+        gx: 0,
+        gy: 18,
+        gw: 18,
+        gh: 11,
+        data: {
+          links: DEMO.documents.map((d) => ({ docId: d.id })),
+        },
+      },
+      {
+        type: "polls",
+        gx: 19,
+        gy: 22,
+        gw: 17,
+        gh: 11,
+        data: {
+          question: "What should our next wellbeing topic be?",
+          options: ["Sleep", "Nutrition", "Stress management", "Work-life balance"],
+          votes: {},
+        },
+      },
+      {
+        type: "text",
+        gx: 0,
+        gy: 30,
+        gw: 18,
+        gh: 7,
+        data: {
+          html: "<b>Policy spotlight</b><br/>New flexible working policy is now live.",
+          fontSize: 13,
+          color: "#1f2937",
+        },
+      },
+    ],
+  },
+  {
+    id: "tpl-comms-central",
+    name: "Comms Central",
+    description: "Broadcast-focused layout with alerts, updates, and quick links.",
+    preview: {
+      rows: [
+        { cols: [3] },
+        { cols: [1, 2] },
+        { cols: [1, 1, 1] },
+      ],
+    },
+    widgets: [
+      {
+        type: "header",
+        gx: 0,
+        gy: 0,
+        gw: WIDGET_DEFS.header.gw,
+        gh: WIDGET_DEFS.header.gh,
+        data: {
+          companyName: DEMO.company.name,
+          subtitle: "Comms Central",
+          details: "Clear • Fast • Company-wide",
+          logoText: "DC",
+          logoImageUrl: "demoicon.png",
+        },
+      },
+      {
+        type: "notifications",
+        gx: 0,
+        gy: 7,
+        gw: 13,
+        gh: 11,
+        data: {
+          items: [
+            { text: "Emergency drill Tuesday 11am.", date: fmtDate(new Date()) },
+            { text: "Updated travel policy released.", date: fmtDate(addDays(new Date(), -5)) },
+          ],
+        },
+      },
+      {
+        type: "news",
+        gx: 14,
+        gy: 7,
+        gw: 22,
+        gh: 14,
+        data: {
+          posts: [
+            {
+              title: "Leadership update",
+              date: fmtDate(addDays(new Date(), -2)),
+              body: "A message from the leadership team on priorities this quarter.",
+              imageUrl: "",
+            },
+          ],
+        },
+      },
+      {
+        type: "button",
+        gx: 0,
+        gy: 20,
+        gw: 12,
+        gh: 4,
+        data: { mode: "text", label: "IT Helpdesk", linkType: "url", url: "https://example.com", pageId: "home", imageUrl: "" },
+      },
+      {
+        type: "button",
+        gx: 0,
+        gy: 25,
+        gw: 12,
+        gh: 4,
+        data: { mode: "text", label: "Policies", linkType: "url", url: "https://example.com", pageId: "home", imageUrl: "" },
+      },
+      {
+        type: "image",
+        gx: 14,
+        gy: 22,
+        gw: 22,
+        gh: 10,
+        data: {
+          imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop",
+          linkType: "url",
+          url: "https://example.com",
+          pageId: "home",
+        },
+      },
+      {
+        type: "text",
+        gx: 0,
+        gy: 30,
+        gw: 12,
+        gh: 6,
+        data: {
+          html: "<b>Comms SLA</b><br/>Critical updates posted within 30 minutes.",
+          fontSize: 13,
+          color: "#1f2937",
+        },
+      },
+    ],
+  },
+  {
+    id: "tpl-operations-board",
+    name: "Operations Board",
+    description: "Operations dashboard with events, documents, and status updates.",
+    preview: {
+      rows: [
+        { cols: [3] },
+        { cols: [2, 1] },
+        { cols: [2, 1] },
+      ],
+    },
+    widgets: [
+      {
+        type: "header",
+        gx: 0,
+        gy: 0,
+        gw: WIDGET_DEFS.header.gw,
+        gh: WIDGET_DEFS.header.gh,
+        data: {
+          companyName: DEMO.company.name,
+          subtitle: "Operations Board",
+          details: "Plan • Execute • Deliver",
+          logoText: "DC",
+          logoImageUrl: "demoicon.png",
+        },
+      },
+      {
+        type: "events",
+        gx: 0,
+        gy: 7,
+        gw: 22,
+        gh: 15,
+        data: {
+          month: new Date().getMonth(),
+          year: new Date().getFullYear(),
+          events: [
+            { id: rid("e"), title: "Weekly ops review", date: isoDate(addDays(new Date(), 1)) },
+            { id: rid("e"), title: "Site audit", date: isoDate(addDays(new Date(), 9)) },
+          ],
+        },
+      },
+      {
+        type: "documents",
+        gx: 23,
+        gy: 7,
+        gw: 13,
+        gh: 11,
+        data: {
+          links: DEMO.documents.map((d) => ({ docId: d.id })),
+        },
+      },
+      {
+        type: "notifications",
+        gx: 23,
+        gy: 19,
+        gw: 13,
+        gh: 10,
+        data: {
+          items: [
+            { text: "Supplier onboarding for crane hire.", date: fmtDate(addDays(new Date(), -2)) },
+            { text: "Fleet inspection due Friday.", date: fmtDate(addDays(new Date(), 2)) },
+          ],
+        },
+      },
+      {
+        type: "discussions",
+        gx: 0,
+        gy: 23,
+        gw: 22,
+        gh: 14,
+        data: {
+          threads: [
+            {
+              id: rid("t"),
+              title: "Operational risks",
+              posts: [{ user: "Hannah (HR)", text: "Flag any operational blockers here.", date: fmtDate(new Date()) }],
+            },
+          ],
+        },
+      },
+    ],
+  },
+];
+
 /**
  * @typedef {{
  *  id: string,
@@ -75,6 +561,7 @@ const els = {
   toolboxHandle: $("#toolboxHandle"),
   addPageBtn: $("#addPageBtn"),
   cleanupBtn: $("#cleanupBtn"),
+  templatePageBtn: $("#templatePageBtn"),
   pagesList: $("#pagesList"),
   modal: $("#modal"),
   modalBackdrop: $("#modalBackdrop"),
@@ -321,6 +808,11 @@ function wireUI() {
     render();
   });
 
+  els.templatePageBtn?.addEventListener("click", () => {
+    if (!state.editMode) return;
+    openTemplateModal();
+  });
+
   // Blank page (currently only option that works)
   els.blankPageBtn.addEventListener("click", () => {
     if (!state.editMode) return;
@@ -339,7 +831,7 @@ function render() {
   document.body.classList.toggle("edit-mode", state.editMode);
   els.toolbox.classList.toggle("toolbox--hidden", !state.editMode);
   ensureToolboxPosition();
-  $("#templatePageBtn").setAttribute("disabled", "true");
+  // Template button is now active
 
   renderPagesList();
   renderCanvas();
@@ -463,8 +955,9 @@ function renderWidgetBody(w) {
     const logoText = w.data?.logoText ?? "DC";
     const logoImageUrl = w.data?.logoImageUrl ?? "demoicon.png";
     wrap.innerHTML = `
-      <div style="display:flex; align-items:center; gap:12px">
-        <div style="
+      <div style="display:flex; align-items:center; gap:16px; justify-content:space-between">
+        <div style="display:flex; align-items:center; gap:12px">
+          <div style="
           width:220px; height:64px; border-radius:18px;
           display:grid; place-items:center;
           background: rgba(255,255,255,0.55);
@@ -475,11 +968,23 @@ function renderWidgetBody(w) {
             style="width:100%; height:100%; object-fit:contain; padding:6px; display:block"
             onerror="this.remove(); this.parentElement.textContent='${escapeAttr(logoText)}'; this.parentElement.style.background='linear-gradient(140deg, rgba(26,115,232,1), rgba(11,87,208,1))'; this.parentElement.style.color='white'; this.parentElement.style.fontWeight='900'; this.parentElement.style.letterSpacing='-0.6px';"
           />
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px">
+            <div style="font-weight:900; font-size:18px; letter-spacing:-0.4px">${escapeHtml(cn)}</div>
+            <div class="muted" style="font-size:13px">${escapeHtml(sub)}</div>
+            <div class="muted" style="font-size:12px">${escapeHtml(details)}</div>
+          </div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:4px">
-          <div style="font-weight:900; font-size:18px; letter-spacing:-0.4px">${escapeHtml(cn)}</div>
-          <div class="muted" style="font-size:13px">${escapeHtml(sub)}</div>
-          <div class="muted" style="font-size:12px">${escapeHtml(details)}</div>
+        <div style="
+          width:84px; height:84px;
+          border-radius:12px;
+          border:1px solid rgba(15,23,42,0.12);
+          background: rgba(255,255,255,0.8);
+          display:grid; place-items:center;
+          flex: 0 0 auto;
+        ">
+          <img alt="QR code" src="${escapeAttr(QR_SAMPLE_DATA_URL)}"
+            style="width:72px; height:72px; object-fit:contain; display:block" />
         </div>
       </div>
     `;
@@ -1049,6 +1554,99 @@ function openAddPageModal() {
   const cancel = button("Cancel", "btn", closeModal);
   openModal("Add page", body, [cancel, save]);
   setTimeout(() => body.querySelector("#pageName")?.focus(), 0);
+}
+
+function openTemplateModal() {
+  const body = document.createElement("div");
+  body.className = "template-grid";
+  body.innerHTML = TEMPLATES.map((t) => templateCardHtml(t)).join("");
+
+  body.querySelectorAll("[data-template-id]").forEach((card) => {
+    const tid = card.getAttribute("data-template-id");
+    const template = TEMPLATES.find((t) => t.id === tid);
+    if (!template) return;
+
+    const applyBtn = card.querySelector("[data-act='apply']");
+    const newBtn = card.querySelector("[data-act='new']");
+
+    applyBtn?.addEventListener("click", () => {
+      applyTemplate(template, { createNewPage: false });
+      closeModal();
+      render();
+    });
+    newBtn?.addEventListener("click", () => {
+      applyTemplate(template, { createNewPage: true });
+      closeModal();
+      render();
+    });
+  });
+
+  const close = button("Close", "btn", closeModal);
+  openModal("Choose a template", body, [close]);
+}
+
+function templateCardHtml(t) {
+  const previewHtml = (t.preview?.rows ?? [])
+    .map((row) => {
+      const cols = row.cols ?? [1];
+      const rowClass = cols.length === 3 ? "template-row template-row--3" : cols.length === 2 ? "template-row template-row--2" : "template-row";
+      return `
+        <div class="${rowClass}">
+          ${cols
+            .map(() => `<div class="template-block"></div>`)
+            .join("")}
+        </div>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="template-card" data-template-id="${escapeAttr(t.id)}">
+      <div class="template-header">
+        <div>
+          <div class="template-title">${escapeHtml(t.name)}</div>
+          <div class="template-desc">${escapeHtml(t.description)}</div>
+        </div>
+        <span class="pill">${escapeHtml(String(t.widgets.length))} elements</span>
+      </div>
+      <div class="template-preview">
+        ${previewHtml}
+      </div>
+      <div class="template-actions">
+        <button class="btn btn--ghost btn--sm" data-act="apply">Apply to this page</button>
+        <button class="btn btn--primary btn--sm" data-act="new">Create new page</button>
+      </div>
+    </div>
+  `;
+}
+
+function applyTemplate(template, { createNewPage }) {
+  const page = createNewPage ? createPageFromTemplate(template) : activePage();
+  page.widgets = cloneTemplateWidgets(template.widgets);
+  normalizePageLayout(page);
+  updateCanvasHeight(page);
+  saveState();
+}
+
+function createPageFromTemplate(template) {
+  const id = rid("p");
+  const name = `Template - ${template.name}`;
+  const page = { id, name, widgets: [] };
+  state.pages.push(page);
+  state.activePageId = id;
+  return page;
+}
+
+function cloneTemplateWidgets(widgets) {
+  return widgets.map((w) => ({
+    id: rid("w"),
+    type: w.type,
+    gx: w.gx,
+    gy: w.gy,
+    gw: w.gw,
+    gh: w.gh,
+    data: JSON.parse(JSON.stringify(w.data ?? {})),
+  }));
 }
 
 /** @param {string} pageId */
