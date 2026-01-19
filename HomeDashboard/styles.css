@@ -231,8 +231,8 @@ body{
 
 .widgets-grid{
   display: grid;
-  /* 6 medium columns = 12 half-columns for button sizing */
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  /* 5 medium columns = 10 half-columns for button sizing */
+  grid-template-columns: repeat(10, minmax(0, 1fr));
   grid-auto-rows: minmax(72px, calc((100vh - var(--header-offset)) / var(--grid-rows)));
   gap: 14px;
   height: calc(100vh - var(--header-offset));
@@ -816,7 +816,7 @@ body{
 }
 .template-preview{
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(10, 1fr);
   grid-auto-rows: 8px;
   gap: 4px;
   border-radius: 12px;

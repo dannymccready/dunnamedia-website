@@ -49,6 +49,8 @@ const DEMO_CREW_MEMBERS = [
   { id: "m6", name: "Ethan Cole", role: "Driver" },
 ];
 
+const LARGE_COLS = 4;
+
 const WIDGET_CATALOG = {
   hide: { label: "Hide", seed: () => ({}) },
   stats: { label: "Metrics", seed: () => ({
@@ -119,27 +121,43 @@ const TEMPLATES = [
     name: "BMBT",
     widgets: () => {
       const widgets = [];
-      // Row 1: buttons in all columns (12 half-columns)
-      for (let i = 0; i < 12; i++) {
+      // Row 1: buttons in all columns (10 half-columns), skip E/F
+      for (let i = 0; i < 10; i++) {
+        if (i === 4 || i === 5) continue;
         const w = widget("button", `Button ${i + 1}`, 1, 1, { label: "", mode: "app", appId: "fleet", url: "" });
         w.place = { col: i + 1, row: 1, w: 1, h: 1 };
         widgets.push(w);
       }
-      // Row 2: 3 banners (2 columns wide each)
-      const bannerCols = [1, 5, 9];
-      bannerCols.forEach((col, idx) => {
-        const b = widget("note", `Banner ${idx + 1}`, 4, 1, { text: "Banner" });
-        b.place = { col, row: 2, w: 4, h: 1 };
-        widgets.push(b);
-      });
-      // Row 3: 6 mediums (1 column wide each)
-      const mediumCols = [1, 3, 5, 7, 9, 11];
+      // Row 1: medium at E1
+      const mediumTop = widget("stats", "Medium Top", 2, 2, WIDGET_CATALOG.stats.seed());
+      mediumTop.place = { col: 5, row: 1, w: 2, h: 2 };
+      widgets.push(mediumTop);
+
+      // Row 2: banner, button, button, banner
+      const bannerLeft = widget("note", "Banner 1", 3, 1, { text: "Banner" });
+      bannerLeft.place = { col: 1, row: 2, w: 3, h: 1 };
+      widgets.push(bannerLeft);
+
+      const buttonA = widget("button", "Button A", 1, 1, { label: "", mode: "app", appId: "fleet", url: "" });
+      buttonA.place = { col: 4, row: 2, w: 1, h: 1 };
+      widgets.push(buttonA);
+
+      const buttonB = widget("button", "Button B", 1, 1, { label: "", mode: "app", appId: "fleet", url: "" });
+      buttonB.place = { col: 7, row: 2, w: 1, h: 1 };
+      widgets.push(buttonB);
+
+      const bannerRight = widget("note", "Banner 2", 3, 1, { text: "Banner" });
+      bannerRight.place = { col: 8, row: 2, w: 3, h: 1 };
+      widgets.push(bannerRight);
+
+      // Row 3: 5 mediums
+      const mediumCols = [1, 3, 5, 7, 9];
       mediumCols.forEach((col, idx) => {
         const m = widget(idx % 2 === 0 ? "stats" : "list", `Medium ${idx + 1}`, 2, 2, WIDGET_CATALOG.stats.seed());
         m.place = { col, row: 3, w: 2, h: 2 };
         widgets.push(m);
       });
-      // Row 5: 6 talls (1 column wide, 4 rows high)
+      // Row 5: 5 talls (1 column wide, 4 rows high)
       mediumCols.forEach((col, idx) => {
         const t = widget("list", `Tall ${idx + 1}`, 2, 4, WIDGET_CATALOG.list.seed());
         t.place = { col, row: 5, w: 2, h: 4 };
@@ -153,41 +171,48 @@ const TEMPLATES = [
     name: "Big Boy",
     widgets: () => {
       const widgets = [];
-      // Row 1: 6 mediums
-      const mediumCols = [1, 3, 5, 7, 9, 11];
-      mediumCols.forEach((col, idx) => {
-        const m = widget(idx % 2 === 0 ? "stats" : "list", `Medium ${idx + 1}`, 2, 2, WIDGET_CATALOG.stats.seed());
-        m.place = { col, row: 1, w: 2, h: 2 };
-        widgets.push(m);
-      });
-      // Row 3: 2 mediums, 4 buttons, 2 mediums
-      const m1 = widget("stats", "Medium A", 2, 2, WIDGET_CATALOG.stats.seed());
-      m1.place = { col: 1, row: 3, w: 2, h: 2 };
-      const m2 = widget("list", "Medium B", 2, 2, WIDGET_CATALOG.list.seed());
-      m2.place = { col: 3, row: 3, w: 2, h: 2 };
-      widgets.push(m1, m2);
-      const btnCols = [5, 6, 7, 8];
-      btnCols.forEach((col, idx) => {
-        const b = widget("button", `Button ${idx + 1}`, 1, 1, { label: "", mode: "app", appId: "fleet", url: "" });
-        b.place = { col, row: 3, w: 1, h: 1 };
+      // A1: large
+      const largeA1 = widget("map", "Large A1", LARGE_COLS, 4, { title: "Large widget" });
+      largeA1.place = { col: 1, row: 1, w: LARGE_COLS, h: 4 };
+      widgets.push(largeA1);
+
+      // G1: large
+      const largeG1 = widget("map", "Large G1", LARGE_COLS, 4, { title: "Large widget" });
+      largeG1.place = { col: 7, row: 1, w: LARGE_COLS, h: 4 };
+      widgets.push(largeG1);
+
+      // E1-F4: buttons
+      const buttonSlots = [
+        { label: "E1", col: 5, row: 1 },
+        { label: "F1", col: 6, row: 1 },
+        { label: "E2", col: 5, row: 2 },
+        { label: "F2", col: 6, row: 2 },
+        { label: "E3", col: 5, row: 3 },
+        { label: "F3", col: 6, row: 3 },
+        { label: "E4", col: 5, row: 4 },
+        { label: "F4", col: 6, row: 4 },
+      ];
+      buttonSlots.forEach((slot) => {
+        const b = widget("button", `Button ${slot.label}`, 1, 1, { label: "", mode: "app", appId: "fleet", url: "" });
+        b.place = { col: slot.col, row: slot.row, w: 1, h: 1 };
         widgets.push(b);
       });
-      const m3 = widget("stats", "Medium C", 2, 2, WIDGET_CATALOG.stats.seed());
-      m3.place = { col: 9, row: 3, w: 2, h: 2 };
-      const m4 = widget("list", "Medium D", 2, 2, WIDGET_CATALOG.list.seed());
-      m4.place = { col: 11, row: 3, w: 2, h: 2 };
-      widgets.push(m3, m4);
-      // Row 4: banner at E4
-      const banner = widget("note", "Banner", 4, 1, { text: "Banner" });
-      banner.place = { col: 5, row: 4, w: 4, h: 1 };
-      widgets.push(banner);
-      // Row 5: 3 larges
-      const largeCols = [1, 5, 9];
-      largeCols.forEach((col, idx) => {
-        const l = widget("map", `Large ${idx + 1}`, 4, 4, { title: "Large widget" });
-        l.place = { col, row: 5, w: 4, h: 4 };
-        widgets.push(l);
-      });
+
+      // A5: large
+      const largeA5 = widget("map", "Large A5", LARGE_COLS, 4, { title: "Large widget" });
+      largeA5.place = { col: 1, row: 5, w: LARGE_COLS, h: 4 };
+      widgets.push(largeA5);
+
+      // E5: tall
+      const tallE5 = widget("list", "Tall E5", 2, 4, WIDGET_CATALOG.list.seed());
+      tallE5.place = { col: 5, row: 5, w: 2, h: 4 };
+      widgets.push(tallE5);
+
+      // G5: large
+      const largeG5 = widget("map", "Large G5", LARGE_COLS, 4, { title: "Large widget" });
+      largeG5.place = { col: 7, row: 5, w: LARGE_COLS, h: 4 };
+      widgets.push(largeG5);
+
       return widgets;
     },
   },
@@ -207,14 +232,11 @@ function baseHomeWidgets() {
     widget("list", "Medium B", 2, 2, WIDGET_CATALOG.list.seed()),
     widget("stats", "Medium C", 2, 2, WIDGET_CATALOG.stats.seed()),
     widget("list", "Medium D", 2, 2, WIDGET_CATALOG.list.seed()),
-    widget("list", "Medium E", 2, 2, WIDGET_CATALOG.list.seed()),
-    widget("stats", "Medium F", 2, 2, WIDGET_CATALOG.stats.seed()),
     widget("list", "Medium G", 2, 2, WIDGET_CATALOG.list.seed()),
     widget("stats", "Medium H", 2, 2, WIDGET_CATALOG.stats.seed()),
     // Tall widgets
     widget("list", "Tall A", 2, 4, WIDGET_CATALOG.list.seed()),
     widget("list", "Tall B", 2, 4, WIDGET_CATALOG.list.seed()),
-    widget("list", "Tall C", 2, 4, WIDGET_CATALOG.list.seed()),
     // Row 4: banner
     widget("note", "Banner", 4, 1, { text: "Banner message..." }),
     // Profile (right column)
@@ -231,13 +253,10 @@ function baseHomeWidgets() {
   const medB = items.find((w) => w.title === "Medium B");
   const medC = items.find((w) => w.title === "Medium C");
   const medD = items.find((w) => w.title === "Medium D");
-  const medE = items.find((w) => w.title === "Medium E");
-  const medF = items.find((w) => w.title === "Medium F");
   const medG = items.find((w) => w.title === "Medium G");
   const medH = items.find((w) => w.title === "Medium H");
   const tallA = items.find((w) => w.title === "Tall A");
   const tallB = items.find((w) => w.title === "Tall B");
-  const tallC = items.find((w) => w.title === "Tall C");
 
   items.forEach((w, idx) => {
     if (w.type === "button") w.place = { col: idx + 1, row: 1, w: 1, h: 1 };
@@ -247,17 +266,14 @@ function baseHomeWidgets() {
   if (medB) medB.place = { col: 3, row: 2, w: 2, h: 2 };
   if (banner) banner.place = { col: 1, row: 4, w: 4, h: 1 };
   if (map) map.place = { col: 5, row: 1, w: 4, h: 4 };
-  if (medE) medE.place = { col: 9, row: 1, w: 2, h: 2 };
-  if (medF) medF.place = { col: 9, row: 3, w: 2, h: 2 };
   if (tallA) tallA.place = { col: 1, row: 5, w: 2, h: 4 };
   if (tallB) tallB.place = { col: 3, row: 5, w: 2, h: 4 };
   if (medC) medC.place = { col: 5, row: 5, w: 2, h: 2 };
   if (medD) medD.place = { col: 7, row: 5, w: 2, h: 2 };
   if (medG) medG.place = { col: 5, row: 7, w: 2, h: 2 };
   if (medH) medH.place = { col: 7, row: 7, w: 2, h: 2 };
-  if (tallC) tallC.place = { col: 9, row: 5, w: 2, h: 4 };
-  if (profile) profile.place = { col: 11, row: 1, w: 2, h: 6 };
-  if (addWidget) addWidget.place = { col: 11, row: 7, w: 2, h: 2 };
+  if (profile) profile.place = { col: 9, row: 1, w: 2, h: 6 };
+  if (addWidget) addWidget.place = { col: 9, row: 7, w: 2, h: 2 };
   return items;
 }
 
@@ -393,7 +409,7 @@ function renderWidgets() {
         node.style.gridColumn = `${w.place.col} / span ${w.place.w}`;
         node.style.gridRow = `${w.place.row} / span ${w.place.h}`;
       } else if (w.type === "profile") {
-        const startCol = Math.max(1, 13 - (w.w || 2));
+        const startCol = Math.max(1, 11 - (w.w || 2));
         node.style.gridColumn = `${startCol} / span ${w.w || 2}`;
         node.style.gridRow = `1 / span ${w.h || 6}`;
       } else {
@@ -822,20 +838,17 @@ function templatePreviewBlocks(id) {
       { col: 3, row: 1, w: 1, h: 1 },
       { col: 4, row: 1, w: 1, h: 1 },
       { col: 5, row: 1, w: 4, h: 4, accent: true },
-      { col: 9, row: 1, w: 2, h: 2 },
-      { col: 9, row: 3, w: 2, h: 2 },
       { col: 1, row: 5, w: 2, h: 4 },
       { col: 3, row: 5, w: 2, h: 4 },
       { col: 5, row: 5, w: 2, h: 2 },
       { col: 5, row: 7, w: 2, h: 2 },
       { col: 7, row: 5, w: 2, h: 2 },
       { col: 7, row: 7, w: 2, h: 2 },
-      { col: 9, row: 5, w: 2, h: 4 },
       { col: 1, row: 2, w: 2, h: 2 },
       { col: 3, row: 2, w: 2, h: 2 },
       { col: 1, row: 4, w: 4, h: 1 },
-      { col: 11, row: 1, w: 2, h: 6 },
-      { col: 11, row: 7, w: 2, h: 2 },
+      { col: 9, row: 1, w: 2, h: 6 },
+      { col: 9, row: 7, w: 2, h: 2 },
     ];
   }
   if (id === "tpl-bmbt") {
@@ -844,51 +857,42 @@ function templatePreviewBlocks(id) {
       { col: 2, row: 1, w: 1, h: 1 },
       { col: 3, row: 1, w: 1, h: 1 },
       { col: 4, row: 1, w: 1, h: 1 },
-      { col: 5, row: 1, w: 1, h: 1 },
-      { col: 6, row: 1, w: 1, h: 1 },
+      { col: 5, row: 1, w: 2, h: 2 },
       { col: 7, row: 1, w: 1, h: 1 },
       { col: 8, row: 1, w: 1, h: 1 },
       { col: 9, row: 1, w: 1, h: 1 },
       { col: 10, row: 1, w: 1, h: 1 },
-      { col: 11, row: 1, w: 1, h: 1 },
-      { col: 12, row: 1, w: 1, h: 1 },
-      { col: 1, row: 2, w: 4, h: 1 },
-      { col: 5, row: 2, w: 4, h: 1 },
-      { col: 9, row: 2, w: 4, h: 1 },
+      { col: 1, row: 2, w: 3, h: 1 },
+      { col: 4, row: 2, w: 1, h: 1 },
+      { col: 7, row: 2, w: 1, h: 1 },
+      { col: 8, row: 2, w: 3, h: 1 },
       { col: 1, row: 3, w: 2, h: 2 },
       { col: 3, row: 3, w: 2, h: 2 },
       { col: 5, row: 3, w: 2, h: 2 },
       { col: 7, row: 3, w: 2, h: 2 },
       { col: 9, row: 3, w: 2, h: 2 },
-      { col: 11, row: 3, w: 2, h: 2 },
       { col: 1, row: 5, w: 2, h: 4 },
       { col: 3, row: 5, w: 2, h: 4 },
       { col: 5, row: 5, w: 2, h: 4 },
       { col: 7, row: 5, w: 2, h: 4 },
       { col: 9, row: 5, w: 2, h: 4 },
-      { col: 11, row: 5, w: 2, h: 4 },
     ];
   }
   if (id === "tpl-big-boy") {
     return [
-      { col: 1, row: 1, w: 2, h: 2 },
-      { col: 3, row: 1, w: 2, h: 2 },
-      { col: 5, row: 1, w: 2, h: 2 },
-      { col: 7, row: 1, w: 2, h: 2 },
-      { col: 9, row: 1, w: 2, h: 2 },
-      { col: 11, row: 1, w: 2, h: 2 },
-      { col: 1, row: 3, w: 2, h: 2 },
-      { col: 3, row: 3, w: 2, h: 2 },
+      { col: 1, row: 1, w: LARGE_COLS, h: 4, accent: true },
+      { col: 7, row: 1, w: LARGE_COLS, h: 4, accent: true },
+      { col: 5, row: 1, w: 1, h: 1 },
+      { col: 6, row: 1, w: 1, h: 1 },
+      { col: 5, row: 2, w: 1, h: 1 },
+      { col: 6, row: 2, w: 1, h: 1 },
       { col: 5, row: 3, w: 1, h: 1 },
       { col: 6, row: 3, w: 1, h: 1 },
-      { col: 7, row: 3, w: 1, h: 1 },
-      { col: 8, row: 3, w: 1, h: 1 },
-      { col: 9, row: 3, w: 2, h: 2 },
-      { col: 11, row: 3, w: 2, h: 2 },
-      { col: 5, row: 4, w: 4, h: 1 },
-      { col: 1, row: 5, w: 4, h: 4, accent: true },
-      { col: 5, row: 5, w: 4, h: 4, accent: true },
-      { col: 9, row: 5, w: 4, h: 4, accent: true },
+      { col: 5, row: 4, w: 1, h: 1 },
+      { col: 6, row: 4, w: 1, h: 1 },
+      { col: 1, row: 5, w: LARGE_COLS, h: 4, accent: true },
+      { col: 5, row: 5, w: 2, h: 4 },
+      { col: 7, row: 5, w: LARGE_COLS, h: 4, accent: true },
     ];
   }
   return [];
