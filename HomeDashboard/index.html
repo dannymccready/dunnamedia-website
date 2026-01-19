@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Prototype</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-username="Amelia">
+    <div id="dashboard" class="dashboard">
+      <div class="page-title">
+        <img src="./title.png" alt="Dashboard title" />
+      </div>
+      <div class="header-widget">
+        <header class="dash-header">
+          <div class="dash-header__left">
+            <img class="header-logo" src="./demoicon.png" alt="Logo" />
+          </div>
+          <div class="dash-header__center">
+            <div class="dash-greeting">
+              <div class="dash-greeting__title">
+                Good morning, <span id="userName">User</span>
+              </div>
+              <div class="dash-greeting__sub">Here is your overview for today.</div>
+            </div>
+          </div>
+          <div class="dash-header__actions">
+            <div class="dash-tabs dash-tabs--header" id="tabs"></div>
+            <button class="btn btn--primary btn--icon" id="editToggle" title="Edit">✏️⚙️</button>
+          </div>
+        </header>
+      </div>
+
+      <section class="widgets-grid" id="widgets"></section>
+    </div>
+
+    <div class="modal modal--hidden" id="modal" role="dialog" aria-modal="true">
+      <div class="modal__backdrop" id="modalBackdrop"></div>
+      <div class="modal__card" role="document">
+        <div class="modal__header">
+          <div class="modal__title" id="modalTitle">Edit</div>
+          <button class="btn btn--ghost btn--sm" id="modalCloseBtn">Close</button>
+        </div>
+        <div class="modal__body" id="modalBody"></div>
+        <div class="modal__footer" id="modalFooter"></div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
