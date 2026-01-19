@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Prototype</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-username="Amelia">
+
+    <div id="dashboard" class="dashboard">
+      
+      <div class="header-widget">
+        <header class="dash-header">
+          <div class="dash-header__left">
+            <img class="header-logo" src="./demoicon.png" alt="Logo" />
+          </div>
+          <div class="dash-header__center">
+            <div class="header-message-stack" id="headerMessageStack">
+              <div class="header-message__fields">
+                <div class="header-message__row" data-index="0">
+                  <textarea class="header-message__field" rows="1" readonly></textarea>
+                  <select class="header-message__font" aria-label="Header font">
+                    <option value='ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial'>Sans</option>
+                    <option value='Georgia, "Times New Roman", Times, serif'>Serif</option>
+                    <option value='"Courier New", Courier, monospace'>Mono</option>
+                    <option value='"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif'>Humanist</option>
+                  </select>
+                  <input type="color" class="header-message__color" value="#111827" aria-label="Header color" />
+                  <button class="header-message__btn header-message__bold" type="button" aria-label="Bold">B</button>
+                  <button class="header-message__btn header-message__italic" type="button" aria-label="Italic">I</button>
+                  <button class="header-message__btn header-message__underline" type="button" aria-label="Underline">U</button>
+                </div>
+                <div class="header-message__row" data-index="1">
+                  <textarea class="header-message__field" rows="1" readonly></textarea>
+                  <select class="header-message__font" aria-label="Header font">
+                    <option value='ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial'>Sans</option>
+                    <option value='Georgia, "Times New Roman", Times, serif'>Serif</option>
+                    <option value='"Courier New", Courier, monospace'>Mono</option>
+                    <option value='"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif'>Humanist</option>
+                  </select>
+                  <input type="color" class="header-message__color" value="#111827" aria-label="Header color" />
+                  <button class="header-message__btn header-message__bold" type="button" aria-label="Bold">B</button>
+                  <button class="header-message__btn header-message__italic" type="button" aria-label="Italic">I</button>
+                  <button class="header-message__btn header-message__underline" type="button" aria-label="Underline">U</button>
+                </div>
+                <div class="header-message__row" data-index="2">
+                  <textarea class="header-message__field" rows="1" readonly></textarea>
+                  <select class="header-message__font" aria-label="Header font">
+                    <option value='ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial'>Sans</option>
+                    <option value='Georgia, "Times New Roman", Times, serif'>Serif</option>
+                    <option value='"Courier New", Courier, monospace'>Mono</option>
+                    <option value='"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif'>Humanist</option>
+                  </select>
+                  <input type="color" class="header-message__color" value="#111827" aria-label="Header color" />
+                  <button class="header-message__btn header-message__bold" type="button" aria-label="Bold">B</button>
+                  <button class="header-message__btn header-message__italic" type="button" aria-label="Italic">I</button>
+                  <button class="header-message__btn header-message__underline" type="button" aria-label="Underline">U</button>
+                </div>
+                <div class="header-message__row" data-index="3">
+                  <textarea class="header-message__field" rows="1" readonly></textarea>
+                  <select class="header-message__font" aria-label="Header font">
+                    <option value='ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial'>Sans</option>
+                    <option value='Georgia, "Times New Roman", Times, serif'>Serif</option>
+                    <option value='"Courier New", Courier, monospace'>Mono</option>
+                    <option value='"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif'>Humanist</option>
+                  </select>
+                  <input type="color" class="header-message__color" value="#111827" aria-label="Header color" />
+                  <button class="header-message__btn header-message__bold" type="button" aria-label="Bold">B</button>
+                  <button class="header-message__btn header-message__italic" type="button" aria-label="Italic">I</button>
+                  <button class="header-message__btn header-message__underline" type="button" aria-label="Underline">U</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dash-header__right">
+            <div class="dash-qr">
+              <img class="dash-qr__image" src="./qr.png" alt="Onboarding QR code" />
+            </div>
+            <div class="dash-header__controls">
+            <button class="btn btn--primary btn--icon" id="editToggle" title="Edit">✏️⚙️</button>
+              <div class="dash-tabs dash-tabs--header dash-header__tabs" id="tabs"></div>
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <section class="widgets-grid" id="widgets"></section>
+      </div>
+    </div>
+
+    <div class="modal modal--hidden" id="modal" role="dialog" aria-modal="true">
+      <div class="modal__backdrop" id="modalBackdrop"></div>
+      <div class="modal__card" role="document">
+        <div class="modal__header">
+          <div class="modal__title" id="modalTitle">Edit</div>
+          <button class="btn btn--ghost btn--sm" id="modalCloseBtn">Close</button>
+        </div>
+        <div class="modal__body" id="modalBody"></div>
+        <div class="modal__footer" id="modalFooter"></div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
