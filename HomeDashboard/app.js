@@ -134,20 +134,12 @@ const TEMPLATES = [
       widgets.push(mediumTop);
 
       // Row 2: banner, button, button, banner
-      const bannerLeft = widget("note", "Banner 1", 3, 1, { text: "Banner" });
-      bannerLeft.place = { col: 1, row: 2, w: 3, h: 1 };
+      const bannerLeft = widget("note", "Banner 1", 4, 1, { text: "Banner" });
+      bannerLeft.place = { col: 1, row: 2, w: 4, h: 1 };
       widgets.push(bannerLeft);
 
-      const buttonA = widget("button", "Button A", 1, 1, { label: "", mode: "app", appId: "fleet", url: "" });
-      buttonA.place = { col: 4, row: 2, w: 1, h: 1 };
-      widgets.push(buttonA);
-
-      const buttonB = widget("button", "Button B", 1, 1, { label: "", mode: "app", appId: "fleet", url: "" });
-      buttonB.place = { col: 7, row: 2, w: 1, h: 1 };
-      widgets.push(buttonB);
-
-      const bannerRight = widget("note", "Banner 2", 3, 1, { text: "Banner" });
-      bannerRight.place = { col: 8, row: 2, w: 3, h: 1 };
+      const bannerRight = widget("note", "Banner 2", 4, 1, { text: "Banner" });
+      bannerRight.place = { col: 7, row: 2, w: 4, h: 1 };
       widgets.push(bannerRight);
 
       // Row 3: 5 mediums
@@ -862,10 +854,8 @@ function templatePreviewBlocks(id) {
       { col: 8, row: 1, w: 1, h: 1 },
       { col: 9, row: 1, w: 1, h: 1 },
       { col: 10, row: 1, w: 1, h: 1 },
-      { col: 1, row: 2, w: 3, h: 1 },
-      { col: 4, row: 2, w: 1, h: 1 },
-      { col: 7, row: 2, w: 1, h: 1 },
-      { col: 8, row: 2, w: 3, h: 1 },
+      { col: 1, row: 2, w: 4, h: 1 },
+      { col: 7, row: 2, w: 4, h: 1 },
       { col: 1, row: 3, w: 2, h: 2 },
       { col: 3, row: 3, w: 2, h: 2 },
       { col: 5, row: 3, w: 2, h: 2 },
