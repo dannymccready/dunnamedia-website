@@ -1,4 +1,5 @@
 const els = {
+  dashboard: document.getElementById("dashboard"),
   userName: document.getElementById("userName"),
   tabs: document.getElementById("tabs"),
   widgets: document.getElementById("widgets"),
@@ -9,6 +10,7 @@ const els = {
   modalTitle: document.getElementById("modalTitle"),
   modalBody: document.getElementById("modalBody"),
   modalFooter: document.getElementById("modalFooter"),
+  stickyLayer: null,
 };
 
 const USER = {
@@ -50,6 +52,21 @@ const DEMO_CREW_MEMBERS = [
 ];
 
 const LARGE_COLS = 4;
+const STICKY_COLORS = [
+  { id: "yellow", label: "Yellow", hex: "#fde68a" },
+  { id: "pink", label: "Pink", hex: "#fbcfe8" },
+  { id: "blue", label: "Blue", hex: "#bfdbfe" },
+  { id: "green", label: "Green", hex: "#bbf7d0" },
+  { id: "orange", label: "Orange", hex: "#fdba74" },
+  { id: "purple", label: "Purple", hex: "#e9d5ff" },
+];
+const HEADLINES_FEED_SOURCES = [
+  "https://feeds.bbci.co.uk/news/world/rss.xml",
+  "https://feeds.skynews.com/feeds/rss/world.xml",
+  "https://www.nasa.gov/rss/dyn/breaking_news.rss",
+];
+const HEADLINES_ROTATE_MS = 12000;
+const HEADLINES_REFRESH_MS = 120000;
 
 const WIDGET_CATALOG = {
   hide: { label: "Hide", seed: () => ({}) },
@@ -69,7 +86,7 @@ const WIDGET_CATALOG = {
     ],
   }) },
   timeline: { label: "Timeline", seed: () => ({ items: ["Kickoff", "Build", "QA", "Launch"] }) },
-  note: { label: "Note", seed: () => ({ text: "Add a longer note here for context." }) },
+  note: { label: "Note", seed: () => ({ text: "Add a longer note here for context.", mode: "text" }) },
   quicknote: { label: "Quick note", seed: () => ({ text: "Quick note..." }) },
   todo: { label: "Todo list", seed: () => ({
     items: [
@@ -87,6 +104,7 @@ const WIDGET_CATALOG = {
     appId: "fleet",
     imageUrl: "",
   }) },
+  sticky: { label: "Sticky note", seed: () => ({ text: "", color: "yellow" }) },
   add: { label: "Add", seed: () => ({ text: "Add widget" }) },
   profile: { label: "Profile", seed: () => ({
     name: "Amelie Laurent",
@@ -220,7 +238,7 @@ function baseHomeWidgets() {
     // Large
     widget("map", "Vehicle tracker", 4, 4, { title: "Vehicle tracker" }),
     // Medium widgets
-    widget("stats", "Medium A", 2, 2, WIDGET_CATALOG.stats.seed()),
+    widget("sticky", "Sticky note", 2, 2, WIDGET_CATALOG.sticky.seed()),
     widget("list", "Medium B", 2, 2, WIDGET_CATALOG.list.seed()),
     widget("stats", "Medium C", 2, 2, WIDGET_CATALOG.stats.seed()),
     widget("list", "Medium D", 2, 2, WIDGET_CATALOG.list.seed()),
@@ -230,7 +248,7 @@ function baseHomeWidgets() {
     widget("list", "Tall A", 2, 4, WIDGET_CATALOG.list.seed()),
     widget("list", "Tall B", 2, 4, WIDGET_CATALOG.list.seed()),
     // Row 4: banner
-    widget("note", "Banner", 4, 1, { text: "Banner message..." }),
+    widget("note", "Banner", 4, 1, { text: "Banner message...", mode: "headlines" }),
     // Profile (right column)
     widget("profile", "Profile", 2, 6, WIDGET_CATALOG.profile.seed()),
     // Add widget (below profile)
@@ -299,6 +317,12 @@ function withHomePlacement(widgets) {
 let state = {
   editMode: false,
   activePageId: "overview",
+  stickyNotes: [],
+  headlines: {
+    items: [],
+    idx: 0,
+    lastUpdated: 0,
+  },
   pages: [
     {
       id: "overview",
@@ -311,6 +335,9 @@ let state = {
 
 function init() {
   els.userName.textContent = USER.name;
+  loadStickyNotes();
+  ensureStickyLayer();
+  initHeadlinesFeed();
   wireUI();
   render();
   // time/date widgets removed
@@ -331,6 +358,7 @@ function render() {
 
   renderTabs();
   renderWidgets();
+  renderStickyNotes();
 }
 
 function renderTabs() {
@@ -475,6 +503,37 @@ function renderWidgets() {
       const item = widget?.data?.items?.find((i) => i.id === todoId);
       if (!item) return;
       item.done = box.checked;
+    });
+  });
+
+  els.widgets.querySelectorAll("[data-action='sticky-text']").forEach((input) => {
+    input.addEventListener("input", () => {
+      const id = input.getAttribute("data-widget-id");
+      const widget = findWidget(id);
+      if (!widget) return;
+      widget.data.text = input.value;
+    });
+  });
+
+  els.widgets.querySelectorAll("[data-action='sticky-color']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-widget-id");
+      const color = btn.getAttribute("data-color");
+      const widget = findWidget(id);
+      if (!widget) return;
+      widget.data.color = color;
+      renderWidgets();
+    });
+  });
+
+  els.widgets.querySelectorAll("[data-action='sticky-create']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-widget-id");
+      const widget = findWidget(id);
+      if (!widget) return;
+      const text = (widget.data.text || "").trim();
+      if (!text) return toast("Add some text for the sticky note.");
+      addStickyNote(text, widget.data.color || "yellow");
     });
   });
 }
@@ -623,7 +682,25 @@ function renderWidgetBody(w) {
     `;
   }
   if (w.type === "note") {
-    if (w.span?.h === 1) return `<div class="centered"><div class="banner">${escapeHtml(w.data.text)}</div></div>`;
+    if (w.span?.h === 1 || w.h === 1) {
+      if (w.data?.mode === "headlines") {
+        const item = state.headlines.items[state.headlines.idx];
+        const headline = item?.title || "Unable to load headlines right now.";
+        const link = item?.link || "";
+        return `
+          <div class="headlines-banner">
+            <div class="headlines-banner__badge">New headlines</div>
+            <div class="headlines-banner__text">${escapeHtml(headline)}</div>
+            ${
+              link
+                ? `<a class="headlines-banner__link" href="${escapeAttr(link)}" target="_blank" rel="noopener noreferrer">Read more</a>`
+                : ""
+            }
+          </div>
+        `;
+      }
+      return `<div class="centered"><div class="banner">${escapeHtml(w.data.text)}</div></div>`;
+    }
     return `<div class="note">${escapeHtml(w.data.text)}</div>`;
   }
   if (w.type === "quicknote") {
@@ -693,6 +770,27 @@ function renderWidgetBody(w) {
           <div class="button-widget__btn">
             ${imageUrl ? `<img class="button-widget__img" src="${imageUrl}" alt="${imageAlt}" />` : `<div>${label}</div>`}
           </div>
+        </div>
+      </div>
+    `;
+  }
+  if (w.type === "sticky") {
+    const text = escapeHtml(w.data.text || "");
+    const selected = w.data.color || "yellow";
+    return `
+      <div class="sticky-widget">
+        <textarea class="sticky-widget__input" data-action="sticky-text" data-widget-id="${escapeAttr(w.id)}" placeholder="Create a sticky note...">${text}</textarea>
+        <div class="sticky-widget__actions">
+          <div class="sticky-widget__colors">
+            ${STICKY_COLORS.map(
+              (c) => `
+              <button class="sticky-color ${c.id === selected ? "sticky-color--selected" : ""}" data-action="sticky-color" data-widget-id="${escapeAttr(
+                w.id
+              )}" data-color="${escapeAttr(c.id)}" style="--sticky-color:${escapeAttr(c.hex)}" title="${escapeAttr(c.label)}"></button>
+            `
+            ).join("")}
+          </div>
+          <button class="btn btn--primary sticky-widget__btn" data-action="sticky-create" data-widget-id="${escapeAttr(w.id)}">Sticky</button>
         </div>
       </div>
     `;
@@ -920,9 +1018,25 @@ function openWidgetEditor(widgetId) {
       <textarea id="noteText"></textarea>
     `;
     body.appendChild(row);
+    const isBanner = widget.type === "note" && (widget.h === 1 || widget.span?.h === 1);
+    if (isBanner) {
+      const templateRow = document.createElement("div");
+      templateRow.innerHTML = `
+        <div class="label">Banner template</div>
+        <select id="bannerTemplate">
+          <option value="text">Text</option>
+          <option value="headlines">Headlines</option>
+        </select>
+      `;
+      body.insertBefore(templateRow, row);
+      body.querySelector("#bannerTemplate").value = widget.data.mode || "text";
+    }
     body.querySelector("#noteText").value = widget.data.text;
     const save = button("Save", "btn btn--primary", () => {
       widget.data.text = body.querySelector("#noteText").value.trim();
+      if (isBanner) {
+        widget.data.mode = body.querySelector("#bannerTemplate").value;
+      }
       closeModal();
       renderWidgets();
     });
@@ -1143,7 +1257,7 @@ function buildWidgetOptions(w) {
   const allowed = {
     tiny: ["button", "quicknote", "hide"],
     small: ["button", "quicknote", "todo", "hide"],
-    medium: ["stats", "list", "timeline", "note", "calculator", "todo", "button", "hide"],
+    medium: ["stats", "list", "timeline", "note", "calculator", "todo", "button", "sticky", "hide"],
     large: ["map", "chart", "list", "stats", "todo", "note", "hide"],
     tall: ["profile", "list", "todo", "note", "map", "hide"],
   }[bucket];
@@ -1253,6 +1367,195 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) {
   return escapeHtml(s).replaceAll("`", "&#096;");
+}
+
+function ensureStickyLayer() {
+  if (els.stickyLayer) return;
+  const layer = document.createElement("div");
+  layer.className = "sticky-layer";
+  els.dashboard.appendChild(layer);
+  els.stickyLayer = layer;
+}
+
+function addStickyNote(text, color) {
+  const offset = 20 * (state.stickyNotes.length % 5);
+  state.stickyNotes.push({
+    id: rid("sticky"),
+    text,
+    color,
+    x: 40 + offset,
+    y: 40 + offset,
+  });
+  saveStickyNotes();
+  renderStickyNotes();
+}
+
+function renderStickyNotes() {
+  ensureStickyLayer();
+  els.stickyLayer.innerHTML = "";
+  state.stickyNotes.forEach((note) => {
+    const el = document.createElement("div");
+    const color = STICKY_COLORS.find((c) => c.id === note.color)?.hex || STICKY_COLORS[0].hex;
+    el.className = "sticky-note";
+    el.setAttribute("data-note-id", note.id);
+    el.style.setProperty("--sticky-color", color);
+    el.style.left = `${note.x}px`;
+    el.style.top = `${note.y}px`;
+    el.innerHTML = `
+      <div class="sticky-note__bar">
+        <span class="sticky-note__bar-text">drag'n'drop</span>
+      </div>
+      <button class="sticky-note__delete" data-action="sticky-delete" title="Delete">×</button>
+      <div class="sticky-note__text">${escapeHtml(note.text)}</div>
+    `;
+
+    el.querySelector("[data-action='sticky-delete']").addEventListener("click", () => {
+      const ok = confirm("Delete this sticky note?");
+      if (!ok) return;
+      state.stickyNotes = state.stickyNotes.filter((n) => n.id !== note.id);
+      saveStickyNotes();
+      renderStickyNotes();
+    });
+
+    el.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("[data-action='sticky-delete']")) return;
+      beginStickyDrag(e, note.id, el);
+    });
+
+    els.stickyLayer.appendChild(el);
+  });
+}
+
+let stickyDragState = null;
+
+function beginStickyDrag(e, id, el) {
+  const note = state.stickyNotes.find((n) => n.id === id);
+  if (!note) return;
+  e.preventDefault();
+  el.classList.add("sticky-note--dragging");
+  stickyDragState = {
+    id,
+    el,
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: note.x,
+    originY: note.y,
+  };
+  document.addEventListener("pointermove", onStickyDragMove);
+  document.addEventListener("pointerup", onStickyDragEnd, { once: true });
+}
+
+function onStickyDragMove(e) {
+  if (!stickyDragState) return;
+  const note = state.stickyNotes.find((n) => n.id === stickyDragState.id);
+  if (!note) return;
+  const dx = e.clientX - stickyDragState.startX;
+  const dy = e.clientY - stickyDragState.startY;
+  note.x = stickyDragState.originX + dx;
+  note.y = stickyDragState.originY + dy;
+  stickyDragState.el.style.left = `${note.x}px`;
+  stickyDragState.el.style.top = `${note.y}px`;
+  const rotation = Math.max(-6, Math.min(6, dx / 12));
+  stickyDragState.el.style.transform = `rotate(${rotation}deg) scale(1.02)`;
+}
+
+function onStickyDragEnd() {
+  document.removeEventListener("pointermove", onStickyDragMove);
+  if (stickyDragState?.el) {
+    stickyDragState.el.classList.remove("sticky-note--dragging");
+    stickyDragState.el.style.transform = "";
+  }
+  if (stickyDragState) {
+    saveStickyNotes();
+  }
+  stickyDragState = null;
+}
+
+const STICKY_STORAGE_KEY = "dashboard.stickyNotes";
+
+function saveStickyNotes() {
+  try {
+    localStorage.setItem(STICKY_STORAGE_KEY, JSON.stringify(state.stickyNotes));
+  } catch {
+    // Ignore storage errors (private mode/quota)
+  }
+}
+
+function loadStickyNotes() {
+  try {
+    const raw = localStorage.getItem(STICKY_STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data)) return;
+    state.stickyNotes = data
+      .filter((n) => n && typeof n === "object")
+      .map((n) => ({
+        id: typeof n.id === "string" ? n.id : rid("sticky"),
+        text: typeof n.text === "string" ? n.text : "",
+        color: typeof n.color === "string" ? n.color : "yellow",
+        x: Number.isFinite(n.x) ? n.x : 40,
+        y: Number.isFinite(n.y) ? n.y : 40,
+      }));
+  } catch {
+    // Ignore parse/storage errors
+  }
+}
+
+function initHeadlinesFeed() {
+  fetchHeadlines();
+  setInterval(() => {
+    rotateHeadline();
+  }, HEADLINES_ROTATE_MS);
+  setInterval(() => {
+    fetchHeadlines();
+  }, HEADLINES_REFRESH_MS);
+}
+
+function rotateHeadline() {
+  if (!state.headlines.items.length) return;
+  state.headlines.idx = (state.headlines.idx + 1) % state.headlines.items.length;
+  renderWidgets();
+}
+
+function fetchHeadlines() {
+  const tryFetch = (index) => {
+    if (index >= HEADLINES_FEED_SOURCES.length) {
+      if (!state.headlines.items.length) {
+        state.headlines.items = [{ title: "Unable to load headlines right now.", link: "" }];
+        state.headlines.idx = 0;
+        renderWidgets();
+      }
+      return;
+    }
+
+    const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(HEADLINES_FEED_SOURCES[index])}`;
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error("Headlines fetch failed.");
+        return res.text();
+      })
+      .then((text) => {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, "text/xml");
+        if (xml.querySelector("parsererror")) throw new Error("Headlines parse failed.");
+        const items = Array.from(xml.querySelectorAll("item"))
+          .map((node) => {
+            const title = node.querySelector("title")?.textContent?.trim();
+            const link = node.querySelector("link")?.textContent?.trim();
+            if (!title) return null;
+            return { title, link: link || "" };
+          })
+          .filter(Boolean);
+        if (!items.length) throw new Error("Headlines empty.");
+        state.headlines.items = items.slice(0, 20);
+        state.headlines.idx = 0;
+        state.headlines.lastUpdated = Date.now();
+        renderWidgets();
+      })
+      .catch(() => tryFetch(index + 1));
+  };
+
+  tryFetch(0);
 }
 
 init();
