@@ -1128,6 +1128,24 @@ body{
   font-size: 12px;
 }
 .todo-item input{ accent-color: #1a73e8; }
+.todo-item__text{
+  flex: 1;
+}
+.todo-item__text--done{
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.todo-item__delete{
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.9);
+  border-radius: 999px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 12px;
+}
 
 .onsite-tall{
   display: grid;

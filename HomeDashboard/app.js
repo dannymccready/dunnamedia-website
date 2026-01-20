@@ -618,6 +618,19 @@ function renderWidgets() {
       const item = widget?.data?.items?.find((i) => i.id === todoId);
       if (!item) return;
       item.done = box.checked;
+      renderWidgets();
+    });
+  });
+
+  els.widgets.querySelectorAll("[data-action='todo-delete']").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const id = btn.getAttribute("data-widget-id");
+      const todoId = btn.getAttribute("data-todo-id");
+      const widget = findWidget(id);
+      if (!widget) return;
+      widget.data.items = (widget.data.items || []).filter((i) => i.id !== todoId);
+      renderWidgets();
     });
   });
 
@@ -860,7 +873,14 @@ function renderWidgetBody(w) {
             <input type="checkbox" data-action="todo-toggle" data-widget-id="${escapeAttr(w.id)}" data-todo-id="${escapeAttr(item.id)}" ${
               item.done ? "checked" : ""
             } />
-            <span>${escapeHtml(item.text)}</span>
+            <span class="todo-item__text ${item.done ? "todo-item__text--done" : ""}">${escapeHtml(item.text)}</span>
+            ${
+              item.done
+                ? `<button class="todo-item__delete" data-action="todo-delete" data-widget-id="${escapeAttr(
+                    w.id
+                  )}" data-todo-id="${escapeAttr(item.id)}" title="Delete">✕</button>`
+                : ""
+            }
           </label>
         `
           )
