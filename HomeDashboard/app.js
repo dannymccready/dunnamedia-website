@@ -96,7 +96,8 @@ const WIDGET_CATALOG = {
     ],
   }) },
   calculator: { label: "Calculator", seed: () => ({ display: "0", expr: "" }) },
-  map: { label: "Live map", seed: () => ({ title: "Vehicle tracker" }) },
+  projects: { label: "Projects", seed: () => ({ title: "Projects", pins: 8 }) },
+  fleetmap: { label: "Fleet", seed: () => ({ title: "Fleet", pins: 6 }) },
   button: { label: "Action button", seed: () => ({
     label: "Open app",
     mode: "app",
@@ -105,6 +106,120 @@ const WIDGET_CATALOG = {
     imageUrl: "",
   }) },
   sticky: { label: "Sticky note", seed: () => ({ text: "", color: "yellow" }) },
+  leave: { label: "Leave request", seed: () => ({ from: "", to: "", reason: "" }) },
+  onsite: { label: "Number on site", seed: () => ({
+    count: 76,
+    projects: [
+      { name: "Warehouse 14", count: 18 },
+      { name: "Bridge retrofit", count: 22 },
+      { name: "City rail", count: 16 },
+      { name: "River tunnels", count: 20 },
+    ],
+  }) },
+  snag: { label: "Snag lists", seed: () => ({
+    count: 5,
+    items: [
+      { name: "Office Snag list" },
+      { name: "Chobham snags" },
+      { name: "Lee Rd snag list" },
+      { name: "Monties Snags" },
+      { name: "Bishops lane Snag list" },
+    ],
+  }) },
+  fleet: { label: "Fleet notice", seed: () => ({
+    items: [
+      { label: "Speed alerts", value: 0 },
+      { label: "Insurance", value: 1 },
+      { label: "MOT", value: 3 },
+    ],
+  }) },
+  onsiteTall: { label: "On site", seed: () => ({
+    selected: "all",
+    projects: [
+      { id: "all", name: "All Projects" },
+      { id: "p1", name: "Riverside Retrofit" },
+      { id: "p2", name: "Station North" },
+      { id: "p3", name: "Hillside Campus" },
+      { id: "p4", name: "Docklands Hub" },
+      { id: "p5", name: "Westline Depot" },
+    ],
+    workers: [
+      { name: "Ava Morris", projectId: "p1", time: "06:42" },
+      { name: "Noah Reed", projectId: "p1", time: "06:55" },
+      { name: "Isla Grant", projectId: "p1", time: "07:05" },
+      { name: "Leo Hayes", projectId: "p1", time: "07:12" },
+      { name: "Mia Patel", projectId: "p1", time: "06:58" },
+      { name: "Ethan Cole", projectId: "p1", time: "07:20" },
+      { name: "Grace Miller", projectId: "p1", time: "06:49" },
+      { name: "Oliver Shaw", projectId: "p1", time: "07:08" },
+      { name: "Harper Wells", projectId: "p1", time: "07:01" },
+      { name: "Jack Turner", projectId: "p1", time: "06:46" },
+      { name: "Ella Brooks", projectId: "p1", time: "07:14" },
+      { name: "Luca Evans", projectId: "p1", time: "06:52" },
+      { name: "Ruby Clarke", projectId: "p2", time: "06:47" },
+      { name: "Mason Lewis", projectId: "p2", time: "06:59" },
+      { name: "Freya Price", projectId: "p2", time: "07:03" },
+      { name: "Callum Frost", projectId: "p2", time: "06:51" },
+      { name: "Zara Hill", projectId: "p2", time: "07:09" },
+      { name: "Theo Adams", projectId: "p2", time: "06:44" },
+      { name: "Poppy Allen", projectId: "p2", time: "07:11" },
+      { name: "Arthur James", projectId: "p2", time: "06:56" },
+      { name: "Lily Ward", projectId: "p2", time: "07:06" },
+      { name: "Logan Cook", projectId: "p2", time: "06:53" },
+      { name: "Sophie King", projectId: "p2", time: "06:48" },
+      { name: "Ben Carter", projectId: "p2", time: "07:15" },
+      { name: "Nina Lopez", projectId: "p2", time: "06:45" },
+      { name: "Jacob Price", projectId: "p2", time: "07:18" },
+      { name: "Elliot Fox", projectId: "p3", time: "06:50" },
+      { name: "Aria Stone", projectId: "p3", time: "07:02" },
+      { name: "Oscar Drake", projectId: "p3", time: "07:16" },
+      { name: "Ivy Palmer", projectId: "p3", time: "06:54" },
+      { name: "Hugo Woods", projectId: "p3", time: "07:04" },
+      { name: "Evie Hall", projectId: "p3", time: "06:57" },
+      { name: "Finn Page", projectId: "p3", time: "07:10" },
+      { name: "Maisie Ross", projectId: "p3", time: "06:43" },
+      { name: "Kai Lewis", projectId: "p3", time: "07:13" },
+      { name: "Maya Rose", projectId: "p3", time: "06:52" },
+      { name: "Rory Bell", projectId: "p3", time: "07:07" },
+      { name: "Alice Hart", projectId: "p3", time: "06:49" },
+      { name: "Toby Lane", projectId: "p3", time: "07:19" },
+      { name: "Jade Cole", projectId: "p3", time: "06:41" },
+      { name: "Sam Perez", projectId: "p4", time: "07:05" },
+      { name: "Chloe Wood", projectId: "p4", time: "06:55" },
+      { name: "Liam Carter", projectId: "p4", time: "07:12" },
+      { name: "Priya Singh", projectId: "p4", time: "06:46" },
+      { name: "Jacob Price", projectId: "p4", time: "07:08" },
+      { name: "Nina Lopez", projectId: "p4", time: "06:50" },
+      { name: "Aaron Blake", projectId: "p4", time: "07:01" },
+      { name: "Zoe Knight", projectId: "p4", time: "06:58" },
+      { name: "Elijah West", projectId: "p4", time: "07:14" },
+      { name: "Mila Scott", projectId: "p4", time: "06:43" },
+      { name: "Owen Cross", projectId: "p4", time: "07:16" },
+      { name: "Ruby Lane", projectId: "p4", time: "06:52" },
+      { name: "Harvey Lowe", projectId: "p4", time: "07:09" },
+      { name: "Eleanor Park", projectId: "p4", time: "06:47" },
+      { name: "Theo Mills", projectId: "p4", time: "07:17" },
+      { name: "Isabelle Reed", projectId: "p5", time: "06:53" },
+      { name: "George Hall", projectId: "p5", time: "07:02" },
+      { name: "Daisy Stone", projectId: "p5", time: "06:45" },
+      { name: "Adam Cox", projectId: "p5", time: "07:06" },
+      { name: "Florence Gray", projectId: "p5", time: "06:51" },
+      { name: "Samuel Reid", projectId: "p5", time: "07:11" },
+      { name: "Mila Ross", projectId: "p5", time: "06:58" },
+      { name: "Archie Webb", projectId: "p5", time: "07:15" },
+      { name: "Esme Ward", projectId: "p5", time: "06:42" },
+      { name: "Henry Brown", projectId: "p5", time: "07:04" },
+      { name: "Olivia Nash", projectId: "p5", time: "06:49" },
+      { name: "Isaac Cole", projectId: "p5", time: "07:18" },
+    ],
+  }) },
+  target: { label: "Targets", seed: () => ({
+    items: [
+      { label: "Development target", value: 55 },
+      { label: "Mobile app target", value: 80 },
+      { label: "Marketing web target", value: 15 },
+    ],
+  }) },
   add: { label: "Add", seed: () => ({ text: "Add widget" }) },
   profile: { label: "Profile", seed: () => ({
     name: "Amelie Laurent",
@@ -182,12 +297,12 @@ const TEMPLATES = [
     widgets: () => {
       const widgets = [];
       // A1: large
-      const largeA1 = widget("map", "Large A1", LARGE_COLS, 4, { title: "Large widget" });
+      const largeA1 = widget("projects", "Large A1", LARGE_COLS, 4, WIDGET_CATALOG.projects.seed());
       largeA1.place = { col: 1, row: 1, w: LARGE_COLS, h: 4 };
       widgets.push(largeA1);
 
       // G1: large
-      const largeG1 = widget("map", "Large G1", LARGE_COLS, 4, { title: "Large widget" });
+      const largeG1 = widget("projects", "Large G1", LARGE_COLS, 4, WIDGET_CATALOG.projects.seed());
       largeG1.place = { col: 7, row: 1, w: LARGE_COLS, h: 4 };
       widgets.push(largeG1);
 
@@ -209,7 +324,7 @@ const TEMPLATES = [
       });
 
       // A5: large
-      const largeA5 = widget("map", "Large A5", LARGE_COLS, 4, { title: "Large widget" });
+      const largeA5 = widget("projects", "Large A5", LARGE_COLS, 4, WIDGET_CATALOG.projects.seed());
       largeA5.place = { col: 1, row: 5, w: LARGE_COLS, h: 4 };
       widgets.push(largeA5);
 
@@ -219,7 +334,7 @@ const TEMPLATES = [
       widgets.push(tallE5);
 
       // G5: large
-      const largeG5 = widget("map", "Large G5", LARGE_COLS, 4, { title: "Large widget" });
+      const largeG5 = widget("projects", "Large G5", LARGE_COLS, 4, WIDGET_CATALOG.projects.seed());
       largeG5.place = { col: 7, row: 5, w: LARGE_COLS, h: 4 };
       widgets.push(largeG5);
 
@@ -236,17 +351,17 @@ function baseHomeWidgets() {
     widget("button", "Button 3", 1, 1, { label: "", mode: "app", appId: "people", url: "" }),
     widget("button", "Button 4", 1, 1, { label: "Mates", mode: "app", appId: "mates", url: "" }),
     // Large
-    widget("map", "Vehicle tracker", 4, 4, { title: "Vehicle tracker" }),
+    widget("projects", "Projects", 4, 4, WIDGET_CATALOG.projects.seed()),
     // Medium widgets
-    widget("sticky", "Sticky note", 2, 2, WIDGET_CATALOG.sticky.seed()),
-    widget("list", "Medium B", 2, 2, WIDGET_CATALOG.list.seed()),
-    widget("stats", "Medium C", 2, 2, WIDGET_CATALOG.stats.seed()),
-    widget("list", "Medium D", 2, 2, WIDGET_CATALOG.list.seed()),
-    widget("list", "Medium G", 2, 2, WIDGET_CATALOG.list.seed()),
-    widget("stats", "Medium H", 2, 2, WIDGET_CATALOG.stats.seed()),
+    widget("sticky", "Medium A", 2, 2, WIDGET_CATALOG.sticky.seed()),
+    widget("leave", "Medium B", 2, 2, WIDGET_CATALOG.leave.seed()),
+    widget("onsite", "Medium C", 2, 2, WIDGET_CATALOG.onsite.seed()),
+    widget("target", "Medium D", 2, 2, WIDGET_CATALOG.target.seed()),
+    widget("fleet", "Medium G", 2, 2, WIDGET_CATALOG.fleet.seed()),
+    widget("snag", "Medium H", 2, 2, WIDGET_CATALOG.snag.seed()),
     // Tall widgets
-    widget("list", "Tall A", 2, 4, WIDGET_CATALOG.list.seed()),
-    widget("list", "Tall B", 2, 4, WIDGET_CATALOG.list.seed()),
+    widget("onsiteTall", "Tall A", 2, 4, WIDGET_CATALOG.onsiteTall.seed()),
+    widget("todo", "Tall B", 2, 4, WIDGET_CATALOG.todo.seed()),
     // Row 4: banner
     widget("note", "Banner", 4, 1, { text: "Banner message...", mode: "headlines" }),
     // Profile (right column)
@@ -257,7 +372,7 @@ function baseHomeWidgets() {
 
   const profile = items.find((w) => w.type === "profile");
   const addWidget = items.find((w) => w.type === "add");
-  const map = items.find((w) => w.type === "map");
+  const map = items.find((w) => w.type === "projects" || w.type === "fleetmap");
   const banner = items.find((w) => w.type === "note");
   const medA = items.find((w) => w.title === "Medium A");
   const medB = items.find((w) => w.title === "Medium B");
@@ -299,7 +414,7 @@ function withHomePlacement(widgets) {
       w.place = { col: idx + 1, row: 1, w: 1, h: 1 };
     }
     if (w.row === 2) {
-      if (w.type === "map") w.place = { col: 1, row: 1, w: 3, h: 4 };
+      if (w.type === "projects" || w.type === "fleetmap") w.place = { col: 1, row: 1, w: 3, h: 4 };
       if (w.title === "Medium 1") w.place = { col: 4, row: 1, w: 2, h: 2 };
       if (w.title === "Medium 2") w.place = { col: 4, row: 3, w: 2, h: 2 };
     }
@@ -506,6 +621,31 @@ function renderWidgets() {
     });
   });
 
+  els.widgets.querySelectorAll("[data-action='todo-add']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-widget-id");
+      const widget = findWidget(id);
+      if (!widget) return;
+      const input = els.widgets.querySelector(`[data-action="todo-input"][data-widget-id="${id}"]`);
+      const value = input?.value?.trim();
+      if (!value) return;
+      widget.data.items = widget.data.items || [];
+      widget.data.items.push({ id: rid("t"), text: value, done: false });
+      input.value = "";
+      renderWidgets();
+    });
+  });
+
+  els.widgets.querySelectorAll("[data-action='onsite-select']").forEach((sel) => {
+    sel.addEventListener("change", () => {
+      const id = sel.getAttribute("data-widget-id");
+      const widget = findWidget(id);
+      if (!widget) return;
+      widget.data.selected = sel.value;
+      renderWidgets();
+    });
+  });
+
   els.widgets.querySelectorAll("[data-action='sticky-text']").forEach((input) => {
     input.addEventListener("input", () => {
       const id = input.getAttribute("data-widget-id");
@@ -709,6 +849,10 @@ function renderWidgetBody(w) {
   if (w.type === "todo") {
     return `
       <div class="todo">
+        <div class="todo-input">
+          <input type="text" placeholder="Add a task..." data-action="todo-input" data-widget-id="${escapeAttr(w.id)}" />
+          <button class="btn btn--primary btn--sm" data-action="todo-add" data-widget-id="${escapeAttr(w.id)}">Add</button>
+        </div>
         ${w.data.items
           .map(
             (item) => `
@@ -743,14 +887,14 @@ function renderWidgetBody(w) {
       </div>
     `;
   }
-  if (w.type === "map") {
+  if (w.type === "projects") {
     return `
-      <div class="centered">
-        <div class="map">
-          <div class="map__pin"></div>
-          ${escapeHtml(w.data.title || "Map")}
-        </div>
-      </div>
+      <img class="projects-map" src="./projectsmap.png" alt="Projects map" />
+    `;
+  }
+  if (w.type === "fleetmap") {
+    return `
+      <img class="projects-map" src="./vanmap.png" alt="Fleet map" />
     `;
   }
   if (w.type === "add") {
@@ -792,6 +936,159 @@ function renderWidgetBody(w) {
           </div>
           <button class="btn btn--primary sticky-widget__btn" data-action="sticky-create" data-widget-id="${escapeAttr(w.id)}">Sticky</button>
         </div>
+      </div>
+    `;
+  }
+  if (w.type === "leave") {
+    return `
+      <div class="leave-widget">
+        <div class="leave-widget__title">Leave request</div>
+        <div class="leave-widget__row">
+          <div>
+            <div class="label">From</div>
+            <input type="text" placeholder="YYYY-MM-DD" />
+          </div>
+          <div>
+            <div class="label">To</div>
+            <input type="text" placeholder="YYYY-MM-DD" />
+          </div>
+        </div>
+        <div>
+          <div class="label">Reason</div>
+          <textarea placeholder="Add a reason..."></textarea>
+        </div>
+        <button class="btn btn--primary">Submit</button>
+      </div>
+    `;
+  }
+  if (w.type === "onsite") {
+    const count = Number.isFinite(w.data?.count) ? w.data.count : 76;
+    const projects = Array.isArray(w.data?.projects) && w.data.projects.length
+      ? w.data.projects
+      : [
+        { name: "Warehouse 14", count: 18 },
+        { name: "Bridge retrofit", count: 22 },
+        { name: "City rail", count: 16 },
+        { name: "River tunnels", count: 20 },
+      ];
+    return `
+      <div class="onsite-widget">
+        <div class="onsite-widget__left">
+          <div class="onsite-widget__label">Number on site</div>
+          <div class="onsite-widget__count">${escapeHtml(count)}</div>
+          <div class="onsite-widget__sub">People clocked in</div>
+        </div>
+        <div class="onsite-widget__right">
+          <div class="onsite-widget__title">Projects</div>
+          <div class="onsite-widget__list">
+            ${projects
+              .map(
+                (item) => `
+              <div class="onsite-widget__item">
+                <span>${escapeHtml(item.name)}</span>
+                <b>${escapeHtml(String(item.count))}</b>
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  if (w.type === "snag") {
+    const count = Number.isFinite(w.data?.count) ? w.data.count : 5;
+    const items = Array.isArray(w.data?.items) && w.data.items.length
+      ? w.data.items
+      : [
+        { name: "Office Snag list" },
+        { name: "Chobham snags" },
+        { name: "Lee Rd snag list" },
+        { name: "Monties Snags" },
+        { name: "Bishops lane Snag list" },
+      ];
+    return `
+      <div class="snag-widget">
+        <div class="snag-widget__left">
+          <div class="snag-widget__label">Active snags</div>
+          <div class="snag-widget__count">${escapeHtml(count)}</div>
+        </div>
+        <div class="snag-widget__right">
+          <div class="snag-widget__title">Snag lists</div>
+          <div class="snag-widget__list">
+            ${items
+              .map(
+                (item) => `
+              <div class="snag-widget__item">${escapeHtml(item.name)}</div>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  if (w.type === "fleet") {
+    return `
+      <div class="fleet-widget">
+        <div class="fleet-widget__title">Fleet notice</div>
+        <div class="fleet-widget__list">
+          ${w.data.items
+            .map(
+              (item) => `
+            <div class="fleet-widget__item">
+              <span>${escapeHtml(item.label)}</span>
+              <b>${escapeHtml(String(item.value))}</b>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+  if (w.type === "onsiteTall") {
+    const selected = w.data?.selected || "all";
+    const projects = Array.isArray(w.data?.projects) ? w.data.projects : [];
+    const workers = Array.isArray(w.data?.workers) ? w.data.workers : [];
+    const visible = selected === "all"
+      ? workers
+      : workers.filter((wkr) => wkr.projectId === selected);
+    return `
+      <div class="onsite-tall">
+        <select class="onsite-tall__select" data-action="onsite-select" data-widget-id="${escapeAttr(w.id)}">
+          ${projects.map((p) => `<option value="${escapeAttr(p.id)}" ${p.id === selected ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}
+        </select>
+        <div class="onsite-tall__list">
+          ${visible
+            .map(
+              (wkr) => `
+            <div class="onsite-tall__item">
+              <span>${escapeHtml(wkr.name)}</span>
+              <span class="onsite-tall__time">${escapeHtml(wkr.time || "")}</span>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+  if (w.type === "target") {
+    return `
+      <div class="target-widget">
+        <div class="target-widget__title">Targets</div>
+        ${w.data.items
+          .map(
+            (item) => `
+          <div class="target-widget__row">
+            <div class="target-widget__label">${escapeHtml(item.label)}</div>
+            <div class="target-widget__value">${escapeHtml(String(item.value))}%</div>
+            <div class="target-widget__bar"><span style="width:${Number(item.value) || 0}%"></span></div>
+          </div>
+        `
+          )
+          .join("")}
       </div>
     `;
   }
@@ -1102,43 +1399,22 @@ function openWidgetEditor(widgetId) {
   }
 
   if (widget.type === "todo") {
-    const row = document.createElement("div");
-    row.innerHTML = `
-      <div class="label">Todo items (one per line)</div>
-      <textarea id="todoLines"></textarea>
-    `;
-    body.appendChild(row);
-    body.querySelector("#todoLines").value = (widget.data.items || []).map((i) => i.text).join("\n");
-    const save = button("Save", "btn btn--primary", () => {
-      const lines = body
-        .querySelector("#todoLines")
-        .value.split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      widget.data.items = lines.map((text) => ({ id: rid("t"), text, done: false }));
-      closeModal();
-      renderWidgets();
-    });
-    const cancel = button("Cancel", "btn", closeModal);
-    openModal(`Edit: ${widget.title}`, body, [cancel, save]);
+    const note = document.createElement("div");
+    note.className = "note";
+    note.textContent = "Add and manage items directly in the widget.";
+    body.appendChild(note);
+    const close = button("Close", "btn btn--primary", closeModal);
+    openModal(`Edit: ${widget.title}`, body, [close]);
     return;
   }
 
-  if (widget.type === "map") {
-    const row = document.createElement("div");
-    row.innerHTML = `
-      <div class="label">Map label</div>
-      <input type="text" id="mapTitle" />
-    `;
-    body.appendChild(row);
-    body.querySelector("#mapTitle").value = widget.data.title || "Vehicle tracker";
-    const save = button("Save", "btn btn--primary", () => {
-      widget.data.title = body.querySelector("#mapTitle").value.trim() || "Vehicle tracker";
-      closeModal();
-      renderWidgets();
-    });
-    const cancel = button("Cancel", "btn", closeModal);
-    openModal(`Edit: ${widget.title}`, body, [cancel, save]);
+  if (widget.type === "projects" || widget.type === "fleetmap") {
+    const note = document.createElement("div");
+    note.className = "note";
+    note.textContent = "Select the widget content from the dropdown above.";
+    body.appendChild(note);
+    const close = button("Close", "btn btn--primary", closeModal);
+    openModal(`Edit: ${widget.title}`, body, [close]);
     return;
   }
 
@@ -1257,9 +1533,9 @@ function buildWidgetOptions(w) {
   const allowed = {
     tiny: ["button", "quicknote", "hide"],
     small: ["button", "quicknote", "todo", "hide"],
-    medium: ["stats", "list", "timeline", "note", "calculator", "todo", "button", "sticky", "hide"],
-    large: ["map", "chart", "list", "stats", "todo", "note", "hide"],
-    tall: ["profile", "list", "todo", "note", "map", "hide"],
+    medium: ["sticky", "leave", "onsite", "snag", "fleet", "target", "hide"],
+    large: ["projects", "fleetmap", "hide"],
+    tall: ["todo", "onsiteTall", "calculator", "hide"],
   }[bucket];
 
   const types = allowed.includes(w.type) ? allowed : [w.type, ...allowed];
@@ -1283,9 +1559,16 @@ function widgetTitle(w) {
     if (w.type === "add") return "Add";
     if (w.type === "note" && (w.span?.h === 1 || w.h === 1)) return "Banner";
     if (w.type === "note" || w.type === "quicknote") return "Note";
+    if (w.type === "leave") return "Leave request";
+    if (w.type === "onsite") return "On site";
+    if (w.type === "snag") return "Snag lists";
+    if (w.type === "fleet") return "Fleet notice";
+    if (w.type === "target") return "Targets";
+    if (w.type === "onsiteTall") return "On site";
     if (w.type === "calculator") return "Calculator";
     if (w.type === "todo") return "Todo";
-    if (w.type === "map") return "Large";
+    if (w.type === "projects") return "Projects";
+    if (w.type === "fleetmap") return "Fleet";
     const bucket = sizeBucket(w);
     return bucket.charAt(0).toUpperCase() + bucket.slice(1);
   })();
