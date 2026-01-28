@@ -10,78 +10,53 @@ console.log('=== ACCOUNTING APP.JS LOADED ===', new Date().toISOString());
 // This ensures it's available immediately when the page loads
 window.openCashTransactionModal = function(transactionId) {
     transactionId = transactionId || null;
-    alert('Function called!');
-    console.log('=== openCashTransactionModal CALLED ===', transactionId);
-    console.log('Document ready state:', document.readyState);
-    
     try {
         const modal = document.getElementById('cashTransactionModal');
         const modalBody = document.getElementById('cashTransactionBody');
         const modalTitle = document.getElementById('cashTransactionModalTitle');
-        
-        if (!modal || !modalBody) {
-            alert('Modal elements not found. Please refresh the page.');
-            return;
-        }
-        
+        if (!modal || !modalBody) return;
         const isEdit = transactionId !== null;
         const transaction = isEdit && typeof cashTransactions !== 'undefined' ? cashTransactions.find(t => t.id === transactionId) : null;
-        
-        if (modalTitle) {
-            modalTitle.textContent = isEdit ? 'Edit Cash Transaction' : 'Add Cash Transaction';
-        }
-        
-        const projects = [
-            'Riverside Tower',
-            'Metro Shopping Centre',
-            'Harbour View Apartments',
-            'City Plaza',
-            'Industrial Complex',
-            'None'
-        ];
-        
+        if (modalTitle) modalTitle.textContent = isEdit ? 'Edit Cash Transaction' : 'Add Cash Transaction';
+        const projects = ['Riverside Tower', 'Metro Shopping Centre', 'Harbour View Apartments', 'City Plaza', 'Industrial Complex', 'None'];
+        const safeReason = transaction && transaction.reason ? (typeof escapeHtml === 'function' ? escapeHtml(transaction.reason) : String(transaction.reason).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')) : '';
+        const projVal = p => (p === 'None' ? '' : p);
+        const projSelected = p => transaction && (transaction.project || '') === projVal(p);
         modalBody.innerHTML = `
-            <form id="cashTransactionForm" onsubmit="submitCashTransaction(event, '${transactionId || ''}')">
+            <form id="cashTransactionForm" class="cash-modal-form" onsubmit="submitCashTransaction(event, '${transactionId || ''}')">
                 <div class="form-group">
-                    <label for="cashType">Transaction Type *</label>
+                    <label for="cashType">Type</label>
                     <select id="cashType" name="type" required>
                         <option value="in" ${transaction && transaction.type === 'in' ? 'selected' : ''}>Cash In</option>
                         <option value="out" ${transaction && transaction.type === 'out' ? 'selected' : ''}>Cash Out</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="cashAmount">Amount *</label>
-                    <input type="number" id="cashAmount" name="amount" step="0.01" min="0" required 
-                           value="${transaction ? transaction.amount : ''}" 
-                           placeholder="0.00">
+                <div class="form-row two-cols">
+                    <div class="form-group">
+                        <label for="cashAmount">Amount (${APP_CONFIG.currencySymbol})</label>
+                        <input type="number" id="cashAmount" name="amount" step="0.01" min="0.01" required value="${transaction ? Number(transaction.amount) : ''}" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="cashDate">Date</label>
+                        <input type="date" id="cashDate" name="date" required value="${transaction ? transaction.date : new Date().toISOString().split('T')[0]}">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="cashDate">Date *</label>
-                    <input type="date" id="cashDate" name="date" required 
-                           value="${transaction ? transaction.date : new Date().toISOString().split('T')[0]}">
-                </div>
-                <div class="form-group">
-                    <label for="cashReason">Reason/Details *</label>
-                    <textarea id="cashReason" name="reason" rows="3" required 
-                              placeholder="Enter reason or details for this transaction">${transaction ? transaction.reason : ''}</textarea>
+                    <label for="cashReason">Reason / details</label>
+                    <textarea id="cashReason" name="reason" rows="2" required placeholder="e.g. Petty cash, client payment">${safeReason}</textarea>
                 </div>
                 <div class="form-group">
                     <label for="cashProject">Project</label>
                     <select id="cashProject" name="project">
-                        ${projects.map(p => `
-                            <option value="${p === 'None' ? '' : p}" ${transaction && transaction.project === p ? 'selected' : ''}>
-                                ${p}
-                            </option>
-                        `).join('')}
+                        ${projects.map(p => `<option value="${projVal(p)}" ${projSelected(p) ? 'selected' : ''}>${p}</option>`).join('')}
                     </select>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="closeCashTransactionModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">${isEdit ? 'Update' : 'Add'} Transaction</button>
+                    <button type="submit" class="btn-primary">${isEdit ? 'Save changes' : 'Add transaction'}</button>
                 </div>
             </form>
         `;
-        
         modal.classList.add('active');
         modal.style.display = 'flex';
         modal.style.alignItems = 'center';
@@ -89,11 +64,8 @@ window.openCashTransactionModal = function(transactionId) {
         modal.style.zIndex = '1000';
         modal.style.visibility = 'visible';
         modal.style.opacity = '1';
-        
-        console.log('Modal activated');
     } catch (error) {
         console.error('Error opening cash transaction modal:', error);
-        alert('Error opening modal: ' + error.message);
     }
 };
 
@@ -1579,16 +1551,45 @@ function generateSuppliers() {
 }
 
 function generateRebateAgreements() {
-    // Shared with procurement app
+    // Rebate Manager: suppliers we have rebate agreements with; terms, docs, linked invoices
     rebateAgreements = [
         {
             id: 'RAG-001',
             supplier: 'SteelFab Solutions',
             name: 'Volume Discount Agreement',
-            percentage: 5,
-            minOrder: 10000,
+            terms: '5% rebate on all orders over £10,000. Paid quarterly in arrears.',
             startDate: '2024-01-01',
             endDate: '2024-12-31',
+            percentage: 5,
+            minOrder: 10000,
+            rebateType: 'percentage',
+            documentRef: 'SteelFab_Rebate_2024.pdf',
+            status: 'active'
+        },
+        {
+            id: 'RAG-002',
+            supplier: 'BuildMate Supplies',
+            name: 'Quarterly Rebate',
+            terms: '3% on orders over £5,000. Minimum quarterly spend £15,000 for rebate to apply.',
+            startDate: '2024-01-01',
+            endDate: '2024-12-31',
+            percentage: 3,
+            minOrder: 5000,
+            rebateType: 'percentage',
+            documentRef: 'BuildMate_Agreement_2024.pdf',
+            status: 'active'
+        },
+        {
+            id: 'RAG-003',
+            supplier: 'ElectraTech',
+            name: 'Annual Volume Rebate',
+            terms: '2.5% annual rebate on total spend. Paid once per financial year.',
+            startDate: '2024-01-01',
+            endDate: '2024-12-31',
+            percentage: 2.5,
+            minOrder: 0,
+            rebateType: 'percentage',
+            documentRef: 'ElectraTech_Rebate_Terms.pdf',
             status: 'active'
         }
     ];
@@ -1730,6 +1731,11 @@ function initializeApp() {
                         if (typeof renderCredits === 'function') renderCredits();
                         break;
                     case 'rebates':
+                        if (typeof generateRebateAgreements === 'function' && (!rebateAgreements || rebateAgreements.length === 0)) {
+                            const saved = localStorage.getItem('rebateAgreements');
+                            if (saved) try { rebateAgreements = JSON.parse(saved); } catch (e) { generateRebateAgreements(); }
+                            else generateRebateAgreements();
+                        }
                         if (typeof renderRebates === 'function') renderRebates();
                         break;
                     case 'cash':
@@ -5595,68 +5601,275 @@ function closeViewCreditModal() {
 }
 
 // ============================================
-// REBATES VIEW
+// REBATES VIEW – Rebate Manager
 // ============================================
 
+function escapeHtml(str) {
+    if (str == null || str === '') return '';
+    const s = String(str);
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/** Invoices linked to an agreement by supplier and within agreement period */
+function getLinkedInvoicesForAgreement(agreement) {
+    if (!invoices || !invoices.length) return [];
+    const start = agreement.startDate ? new Date(agreement.startDate) : null;
+    const end = agreement.endDate ? new Date(agreement.endDate) : null;
+    return invoices.filter(inv => {
+        if (inv.supplier !== agreement.supplier) return false;
+        if (start && inv.date) { if (new Date(inv.date) < start) return false; }
+        if (end && inv.date) { if (new Date(inv.date) > end) return false; }
+        return true;
+    });
+}
+
+/** Estimated rebate from linked invoice totals using agreement terms (e.g. percentage) */
+function calculateEstimatedRebate(agreement, linkedInvoices) {
+    if (!linkedInvoices || !linkedInvoices.length) return 0;
+    const totalSpend = linkedInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+    const minOrder = agreement.minOrder != null ? agreement.minOrder : 0;
+    if (totalSpend < minOrder) return 0;
+    const pct = agreement.percentage != null ? agreement.percentage : 0;
+    return (totalSpend * pct) / 100;
+}
+
 function renderRebates() {
+    const pageHeader = document.getElementById('rebatesPageHeader');
+    const statsBar = document.getElementById('rebatesStatsBar');
     const agreementsContainer = document.getElementById('rebatesAgreements');
     const analysisContainer = document.getElementById('rebatesAnalysis');
-    
-    if (agreementsContainer) {
-        agreementsContainer.innerHTML = `
-            <div class="section-header">
-                <h3>Rebate Agreements</h3>
-                <button class="btn-primary btn-sm" onclick="openRebateAgreementModal()">New Agreement</button>
+
+    const linkedByAgreement = (rebateAgreements || []).map(ag => ({
+        agreement: ag,
+        linked: getLinkedInvoicesForAgreement(ag),
+        estimated: calculateEstimatedRebate(ag, getLinkedInvoicesForAgreement(ag))
+    }));
+    const totalEstimated = linkedByAgreement.reduce((sum, x) => sum + x.estimated, 0);
+    const totalLinkedInvoices = linkedByAgreement.reduce((sum, x) => sum + x.linked.length, 0);
+
+    if (pageHeader) {
+        pageHeader.innerHTML = `
+            <h2>Rebate Manager</h2>
+            <p class="rebates-subtitle">Suppliers with rebate agreements: documents, terms, linked invoices and estimated rebate returns.</p>
+        `;
+    }
+    if (statsBar) {
+        statsBar.innerHTML = `
+            <div class="rebate-stat-card">
+                <span class="rebate-stat-value">${(rebateAgreements || []).length}</span>
+                <span class="rebate-stat-label">Agreements</span>
             </div>
-            <div class="rebate-agreements-list">
-                ${rebateAgreements.map(agreement => `
-                    <div class="rebate-agreement-card">
-                        <div class="agreement-header">
-                            <div class="agreement-name">${agreement.name}</div>
-                            <div class="agreement-status ${agreement.status}">${agreement.status}</div>
-                        </div>
-                        <div class="agreement-body">
-                            <div class="agreement-supplier">${agreement.supplier}</div>
-                            <div class="agreement-details">
-                                <span>${agreement.percentage}% discount</span>
-                                <span>Min order: ${APP_CONFIG.currencySymbol}${agreement.minOrder.toLocaleString('en-GB')}</span>
-                            </div>
-                            <div class="agreement-period">${agreement.startDate} to ${agreement.endDate}</div>
-                        </div>
-                    </div>
-                `).join('')}
+            <div class="rebate-stat-card">
+                <span class="rebate-stat-value">${totalLinkedInvoices}</span>
+                <span class="rebate-stat-label">Linked invoices</span>
+            </div>
+            <div class="rebate-stat-card highlight">
+                <span class="rebate-stat-value">${APP_CONFIG.currencySymbol}${totalEstimated.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
+                <span class="rebate-stat-label">Total estimated rebate</span>
             </div>
         `;
     }
-    
-    if (analysisContainer) {
-        // AI analysis simulation
-        analysisContainer.innerHTML = `
-            <div class="section-header">
-                <h3>AI Rebate Analysis</h3>
+    if (agreementsContainer) {
+        agreementsContainer.innerHTML = `
+            <div class="rebates-section-header">
+                <h3>Supplier rebate agreements</h3>
+                <button type="button" class="btn-primary btn-sm" onclick="openRebateAgreementModal()">Add agreement</button>
             </div>
-            <div class="rebate-analysis-content">
-                <div class="analysis-summary">
-                    <p>Analyzed ${invoices.length} invoices and identified ${rebates.length} rebate opportunities.</p>
-                    <p>Estimated rebate value: ${APP_CONFIG.currencySymbol}${rebates.reduce((sum, r) => sum + r.estimatedValue, 0).toLocaleString('en-GB', { minimumFractionDigits: 2 })}</p>
-                </div>
-                <div class="rebate-opportunities">
-                    ${rebates.map(reb => `
-                        <div class="rebate-opportunity">
-                            <div class="opportunity-supplier">${reb.supplier}</div>
-                            <div class="opportunity-agreement">${reb.agreement}</div>
-                            <div class="opportunity-value">${APP_CONFIG.currencySymbol}${reb.estimatedValue.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
+            <div class="rebate-agreements-list">
+                ${(rebateAgreements || []).length === 0 ? `
+                    <div class="rebates-empty-state">
+                        <p>No rebate agreements yet. Add an agreement to link supplier invoices and track estimated rebates.</p>
+                        <button type="button" class="btn-primary" onclick="openRebateAgreementModal()">Add first agreement</button>
+                    </div>
+                ` : (rebateAgreements || []).map(ag => {
+                    const data = linkedByAgreement.find(d => d.agreement.id === ag.id) || { linked: [], estimated: 0 };
+                    const linked = data.linked;
+                    const estimated = data.estimated;
+                    const totalSpend = linked.reduce((s, i) => s + (i.amount || 0), 0);
+                    return `
+                    <div class="rebate-agreement-card" data-agreement-id="${ag.id}">
+                        <div class="rebate-card-header">
+                            <div class="rebate-card-title-row">
+                                <h4 class="rebate-supplier-name">${escapeHtml(ag.supplier)}</h4>
+                                <div class="rebate-card-actions">
+                                    <span class="rebate-status-badge ${(ag.status || 'active').toLowerCase()}">${escapeHtml(ag.status || 'active')}</span>
+                                    <button type="button" class="btn-ghost btn-sm rebate-edit-btn" onclick="openRebateAgreementModal('${ag.id}')">Edit</button>
+                                </div>
+                            </div>
+                            <div class="rebate-agreement-name">${escapeHtml(ag.name || '')}</div>
+                            <div class="rebate-dates">${escapeHtml(ag.startDate || '')} – ${escapeHtml(ag.endDate || '')}</div>
                         </div>
-                    `).join('')}
-                </div>
+                        <div class="rebate-card-body">
+                            <div class="rebate-terms-block">
+                                <strong>Terms</strong>
+                                <p class="rebate-terms-text">${escapeHtml(ag.terms || 'No terms recorded.')}</p>
+                            </div>
+                            <div class="rebate-doc-block">
+                                <strong>Document</strong>
+                                <span class="rebate-doc-ref">${ag.documentRef ? escapeHtml(ag.documentRef) : '—'}</span>
+                            </div>
+                            <div class="rebate-stats-inline">
+                                <span>${ag.percentage != null ? ag.percentage + '%' : '—'} rebate</span>
+                                ${ag.minOrder != null ? `<span>Min order ${APP_CONFIG.currencySymbol}${Number(ag.minOrder).toLocaleString('en-GB')}</span>` : ''}
+                            </div>
+                            <div class="rebate-linked-invoices">
+                                <strong>Linked invoices (${linked.length})</strong>
+                                ${linked.length === 0
+                                    ? '<p class="rebate-no-invoices">No invoices linked for this supplier in the agreement period.</p>'
+                                    : `
+                                <table class="rebate-invoices-table">
+                                    <thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Project</th></tr></thead>
+                                    <tbody>
+                                    ${linked.map(inv => `
+                                        <tr>
+                                            <td>${escapeHtml(inv.number || inv.id || '')}</td>
+                                            <td>${escapeHtml(inv.date || '')}</td>
+                                            <td>${APP_CONFIG.currencySymbol}${(inv.amount || 0).toLocaleString('en-GB', { minimumFractionDigits: 2 })}</td>
+                                            <td>${escapeHtml(inv.project || '—')}</td>
+                                        </tr>
+                                    `).join('')}
+                                    </tbody>
+                                </table>
+                                <div class="rebate-linked-total">Total spend: ${APP_CONFIG.currencySymbol}${totalSpend.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
+                                `}
+                            </div>
+                            <div class="rebate-estimated-block">
+                                <strong>Estimated rebate</strong>
+                                <span class="rebate-estimated-value">${APP_CONFIG.currencySymbol}${estimated.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+    if (analysisContainer) {
+        analysisContainer.innerHTML = `
+            <div class="rebates-section-header"><h3>Summary</h3></div>
+            <div class="rebate-summary-content">
+                <p>Total estimated rebate across all agreements: <strong>${APP_CONFIG.currencySymbol}${totalEstimated.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</strong>.</p>
+                <p>Invoices are linked automatically by supplier and agreement period. Edit an agreement to change terms or dates.</p>
             </div>
         `;
     }
 }
 
-function openRebateAgreementModal() {
-    // Modal for creating new rebate agreement
-    showToast('info', 'Coming Soon', 'Rebate agreement creation will be available soon');
+function openRebateAgreementModal(editId) {
+    const existing = editId ? (rebateAgreements || []).find(a => a.id === editId) : null;
+    const suppliersList = (suppliers && suppliers.length) ? suppliers : (invoices || []).reduce((acc, inv) => {
+        if (inv.supplier && !acc.find(s => s.name === inv.supplier)) acc.push({ id: inv.supplier, name: inv.supplier });
+        return acc;
+    }, []);
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay rebate-agreement-modal-overlay';
+    modal.id = 'rebateAgreementModal';
+    modal.innerHTML = `
+        <div class="modal rebate-agreement-modal">
+            <div class="modal-header">
+                <h3>${existing ? 'Edit rebate agreement' : 'Add rebate agreement'}</h3>
+                <button type="button" class="modal-close" onclick="closeRebateAgreementModal()" aria-label="Close">&times;</button>
+            </div>
+            <form id="rebateAgreementForm" class="modal-body">
+                <div class="form-group">
+                    <label for="rebateModalSupplier">Supplier</label>
+                    <select id="rebateModalSupplier" required>
+                        <option value="">— Select supplier —</option>
+                        ${(suppliersList.length ? suppliersList : []).map(s => {
+                            const name = typeof s === 'string' ? s : (s.name || s.id || '');
+                            return `<option value="${escapeHtml(name)}" ${existing && existing.supplier === name ? 'selected' : ''}>${escapeHtml(name)}</option>`;
+                        }).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="rebateModalName">Agreement name</label>
+                    <input type="text" id="rebateModalName" value="${existing ? escapeHtml(existing.name || '') : ''}" placeholder="e.g. Volume Discount 2024" required />
+                </div>
+                <div class="form-group">
+                    <label for="rebateModalTerms">Terms</label>
+                    <textarea id="rebateModalTerms" rows="3" placeholder="e.g. 5% rebate on orders over £10,000, paid quarterly">${existing ? escapeHtml(existing.terms || '') : ''}</textarea>
+                </div>
+                <div class="form-row two-cols">
+                    <div class="form-group">
+                        <label for="rebateModalStartDate">Start date</label>
+                        <input type="date" id="rebateModalStartDate" value="${existing ? (existing.startDate || '') : ''}" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="rebateModalEndDate">End date</label>
+                        <input type="date" id="rebateModalEndDate" value="${existing ? (existing.endDate || '') : ''}" />
+                    </div>
+                </div>
+                <div class="form-row two-cols">
+                    <div class="form-group">
+                        <label for="rebateModalPercentage">Rebate %</label>
+                        <input type="number" id="rebateModalPercentage" min="0" step="0.5" value="${existing && existing.percentage != null ? existing.percentage : ''}" placeholder="e.g. 5" />
+                    </div>
+                    <div class="form-group">
+                        <label for="rebateModalMinOrder">Min order (${APP_CONFIG.currencySymbol})</label>
+                        <input type="number" id="rebateModalMinOrder" min="0" step="100" value="${existing && existing.minOrder != null ? existing.minOrder : ''}" placeholder="0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="rebateModalDocument">Document reference</label>
+                    <input type="text" id="rebateModalDocument" value="${existing ? escapeHtml(existing.documentRef || '') : ''}" placeholder="e.g. Rebate_Agreement_2024.pdf" />
+                </div>
+                <div class="form-group">
+                    <label for="rebateModalStatus">Status</label>
+                    <select id="rebateModalStatus">
+                        <option value="active" ${existing && existing.status === 'active' ? 'selected' : ''}>Active</option>
+                        <option value="expired" ${existing && existing.status === 'expired' ? 'selected' : ''}>Expired</option>
+                        <option value="draft" ${existing && existing.status === 'draft' ? 'selected' : ''}>Draft</option>
+                    </select>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeRebateAgreementModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="saveRebateAgreement('${existing ? existing.id : ''}')">${existing ? 'Save changes' : 'Add agreement'}</button>
+            </div>
+        </div>
+    `;
+    modal.addEventListener('click', e => { if (e.target === modal) closeRebateAgreementModal(); });
+    document.body.appendChild(modal);
+    requestAnimationFrame(() => modal.classList.add('active'));
+}
+
+function closeRebateAgreementModal() {
+    const modal = document.getElementById('rebateAgreementModal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+function saveRebateAgreement(editId) {
+    const supplier = document.getElementById('rebateModalSupplier')?.value?.trim();
+    const name = document.getElementById('rebateModalName')?.value?.trim();
+    const terms = document.getElementById('rebateModalTerms')?.value?.trim();
+    const startDate = document.getElementById('rebateModalStartDate')?.value?.trim();
+    const endDate = document.getElementById('rebateModalEndDate')?.value?.trim();
+    const percentage = parseFloat(document.getElementById('rebateModalPercentage')?.value) || 0;
+    const minOrder = parseFloat(document.getElementById('rebateModalMinOrder')?.value) || 0;
+    const documentRef = document.getElementById('rebateModalDocument')?.value?.trim();
+    const status = document.getElementById('rebateModalStatus')?.value || 'active';
+    if (!supplier || !name || !startDate) {
+        if (typeof showToast === 'function') showToast('warning', 'Missing fields', 'Supplier, agreement name and start date are required.');
+        return;
+    }
+    if (!rebateAgreements) rebateAgreements = [];
+    if (editId) {
+        const idx = rebateAgreements.findIndex(a => a.id === editId);
+        if (idx >= 0) {
+            rebateAgreements[idx] = { ...rebateAgreements[idx], supplier, name, terms, startDate, endDate: endDate || undefined, percentage, minOrder, documentRef: documentRef || undefined, status, rebateType: 'percentage' };
+        }
+    } else {
+        const id = 'RAG-' + String(Date.now()).slice(-8);
+        rebateAgreements.push({ id, supplier, name, terms, startDate, endDate: endDate || undefined, percentage, minOrder, documentRef: documentRef || undefined, status, rebateType: 'percentage' });
+    }
+    try { localStorage.setItem('rebateAgreements', JSON.stringify(rebateAgreements)); } catch (e) {}
+    closeRebateAgreementModal();
+    if (typeof renderRebates === 'function') renderRebates();
+    if (typeof showToast === 'function') showToast('success', 'Saved', editId ? 'Agreement updated.' : 'Agreement added. Invoices from this supplier will be linked automatically.');
 }
 
 // ============================================
@@ -5664,103 +5877,82 @@ function openRebateAgreementModal() {
 // ============================================
 
 function renderCash() {
-    console.log('=== RENDERCASH FUNCTION CALLED ===');
-    console.log('cashTransactions:', cashTransactions);
-    
-    // Don't manipulate view visibility here - that's handled by switchView()
-    const cashView = document.getElementById('cashView');
-    if (!cashView) {
-        console.error('Cash view element not found!');
-        return;
-    }
-    
     const transactionsContainer = document.getElementById('cashTransactions');
-    if (!transactionsContainer) {
-        console.error('Cash transactions container not found!');
-        return;
-    }
-    console.log('Cash transactions container found');
-    
-    // Get projects list (simulated - would come from project manager app)
-    const projects = [
-        'Riverside Tower',
-        'Metro Shopping Centre',
-        'Harbour View Apartments',
-        'City Plaza',
-        'Industrial Complex'
-    ];
-    
-    // Ensure cashTransactions is initialized
+    if (!transactionsContainer) return;
+
     if (typeof cashTransactions === 'undefined' || cashTransactions === null || !Array.isArray(cashTransactions)) {
         cashTransactions = [];
     }
-    
+
+    const projects = ['Riverside Tower', 'Metro Shopping Centre', 'Harbour View Apartments', 'City Plaza', 'Industrial Complex'];
+    const totalIn = cashTransactions.filter(t => t.type === 'in').reduce((sum, t) => sum + t.amount, 0);
+    const totalOut = cashTransactions.filter(t => t.type === 'out').reduce((sum, t) => sum + t.amount, 0);
+    const netCash = totalIn - totalOut;
+
     if (cashTransactions.length === 0) {
-        const emptyStateHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">
+        transactionsContainer.innerHTML = `
+            <div class="cash-page-header">
+                <h2>Cash</h2>
+                <p class="cash-subtitle">Track cash in and out: petty cash, deposits, withdrawals and project-linked transactions.</p>
+            </div>
+            <div class="cash-empty-state">
+                <div class="cash-empty-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                         <line x1="1" y1="10" x2="23" y2="10"/>
                         <path d="M12 1v22"/>
                     </svg>
                 </div>
-                <h3 class="empty-state-title">No Cash Transactions</h3>
-                <p class="empty-state-text">Start by adding your first cash transaction</p>
-                <button class="btn-primary" id="addCashTransactionBtnEmpty" onclick="try { window.openCashTransactionModal(); } catch(e) { alert('Error calling function: ' + e.message + ' - Type: ' + typeof window.openCashTransactionModal); }" style="margin-top: 24px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    <span>Add Cash Transaction</span>
+                <h3>No cash transactions yet</h3>
+                <p>Record cash in (e.g. client payments, deposits) and cash out (e.g. petty cash, expenses) to see totals and link to projects.</p>
+                <button type="button" class="btn-primary" onclick="window.openCashTransactionModal && window.openCashTransactionModal();">
+                    <span class="btn-icon-inline">+</span> Add transaction
                 </button>
             </div>
         `;
-        transactionsContainer.innerHTML = emptyStateHTML;
-        console.log('Empty state rendered');
         return;
     }
-    
-    // Calculate totals
-    const totalIn = cashTransactions.filter(t => t.type === 'in').reduce((sum, t) => sum + t.amount, 0);
-    const totalOut = cashTransactions.filter(t => t.type === 'out').reduce((sum, t) => sum + t.amount, 0);
-    const netCash = totalIn - totalOut;
-    
+
     transactionsContainer.innerHTML = `
-        <div class="cash-summary">
-            <div class="cash-summary-card">
-                <div class="cash-summary-label">Total Cash In</div>
-                <div class="cash-summary-value positive">${APP_CONFIG.currencySymbol}${totalIn.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
+        <div class="cash-page-header">
+            <h2>Cash</h2>
+            <p class="cash-subtitle">Track cash in and out: petty cash, deposits, withdrawals and project-linked transactions.</p>
+        </div>
+        <div class="cash-stats-bar">
+            <div class="cash-stat-card cash-stat-in">
+                <span class="cash-stat-value">${APP_CONFIG.currencySymbol}${totalIn.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
+                <span class="cash-stat-label">Cash in</span>
             </div>
-            <div class="cash-summary-card">
-                <div class="cash-summary-label">Total Cash Out</div>
-                <div class="cash-summary-value negative">${APP_CONFIG.currencySymbol}${totalOut.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
+            <div class="cash-stat-card cash-stat-out">
+                <span class="cash-stat-value">${APP_CONFIG.currencySymbol}${totalOut.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
+                <span class="cash-stat-label">Cash out</span>
             </div>
-            <div class="cash-summary-card">
-                <div class="cash-summary-label">Net Cash</div>
-                <div class="cash-summary-value ${netCash >= 0 ? 'positive' : 'negative'}">${APP_CONFIG.currencySymbol}${Math.abs(netCash).toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
+            <div class="cash-stat-card cash-stat-net ${netCash >= 0 ? 'positive' : 'negative'}">
+                <span class="cash-stat-value">${APP_CONFIG.currencySymbol}${Math.abs(netCash).toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
+                <span class="cash-stat-label">Net</span>
             </div>
         </div>
-        <div class="cash-transactions-list">
-            <div class="cash-transactions-header">
-                <h3>Cash Transactions</h3>
-                <div class="cash-filters">
-                    <select id="cashTypeFilter" onchange="filterCashTransactions()">
-                        <option value="all">All Types</option>
-                        <option value="in">Cash In</option>
-                        <option value="out">Cash Out</option>
-                    </select>
-                    <select id="cashProjectFilter" onchange="filterCashTransactions()">
-                        <option value="all">All Projects</option>
-                        ${projects.map(p => `<option value="${p}">${p}</option>`).join('')}
-                        <option value="">No Project</option>
-                    </select>
-                    <input type="date" id="cashDateFrom" placeholder="From Date" onchange="filterCashTransactions()" title="From Date">
-                    <input type="date" id="cashDateTo" placeholder="To Date" onchange="filterCashTransactions()" title="To Date">
-                    <input type="text" id="cashSearch" placeholder="Search transactions..." onkeyup="filterCashTransactions()">
-                </div>
+        <div class="cash-list-section">
+            <div class="cash-section-header">
+                <h3>Transactions</h3>
+                <button type="button" class="btn-primary btn-sm" onclick="window.openCashTransactionModal && window.openCashTransactionModal();">Add transaction</button>
             </div>
-            <div class="cash-transactions-table" id="cashTransactionsTable">
+            <div class="cash-filters-row">
+                <select id="cashTypeFilter" onchange="filterCashTransactions()" class="cash-filter-select">
+                    <option value="all">All types</option>
+                    <option value="in">Cash in</option>
+                    <option value="out">Cash out</option>
+                </select>
+                <select id="cashProjectFilter" onchange="filterCashTransactions()" class="cash-filter-select">
+                    <option value="all">All projects</option>
+                    ${projects.map(p => `<option value="${p}">${p}</option>`).join('')}
+                    <option value="">No project</option>
+                </select>
+                <input type="date" id="cashDateFrom" class="cash-filter-input" onchange="filterCashTransactions()" title="From date">
+                <input type="date" id="cashDateTo" class="cash-filter-input" onchange="filterCashTransactions()" title="To date">
+                <input type="text" id="cashSearch" class="cash-filter-search" placeholder="Search reason or project…" oninput="filterCashTransactions()">
+            </div>
+            <div class="cash-table-wrap" id="cashTransactionsTable">
                 ${renderCashTransactionsTable(cashTransactions)}
             </div>
         </div>
@@ -5768,21 +5960,10 @@ function renderCash() {
 }
 
 function renderCashTransactionsTable(transactions) {
+    const esc = typeof escapeHtml === 'function' ? escapeHtml : s => (s == null || s === '' ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
     if (transactions.length === 0) {
-        return `
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                        <line x1="1" y1="10" x2="23" y2="10"/>
-                        <path d="M12 1v22"/>
-                    </svg>
-                </div>
-                <p class="empty-state-text">No transactions found</p>
-            </div>
-        `;
+        return '<div class="cash-table-empty"><p>No transactions match the current filters.</p></div>';
     }
-    
     return `
         <table class="cash-table">
             <thead>
@@ -5790,45 +5971,24 @@ function renderCashTransactionsTable(transactions) {
                     <th>Date</th>
                     <th>Type</th>
                     <th>Amount</th>
-                    <th>Reason/Details</th>
+                    <th>Reason</th>
                     <th>Project</th>
-                    <th>Linked Transaction</th>
-                    <th>Actions</th>
+                    <th>Linked</th>
+                    <th class="cash-actions-col">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                ${transactions.map(transaction => `
-                    <tr>
-                        <td>${new Date(transaction.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                        <td>
-                            <span class="cash-type-badge ${transaction.type}">
-                                ${transaction.type === 'in' ? 'Cash In' : 'Cash Out'}
-                            </span>
-                        </td>
-                        <td class="${transaction.type === 'in' ? 'positive' : 'negative'}">
-                            ${transaction.type === 'in' ? '+' : '-'}${APP_CONFIG.currencySymbol}${transaction.amount.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
-                        </td>
-                        <td>${transaction.reason || 'N/A'}</td>
-                        <td>${transaction.project || 'N/A'}</td>
-                        <td>
-                            ${transaction.pairedWithTransaction ? 
-                                `<span class="paired-badge">Linked to ${transaction.pairedWithTransaction}</span>` : 
-                                '<span class="unpaired-badge">Not linked</span>'
-                            }
-                        </td>
-                        <td>
-                            <button class="btn-icon" onclick="editCashTransaction('${transaction.id}')" title="Edit">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" onclick="deleteCashTransaction('${transaction.id}')" title="Delete">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                </svg>
-                            </button>
+                ${transactions.map(t => `
+                    <tr class="cash-row">
+                        <td class="cash-date">${new Date(t.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                        <td><span class="cash-type-badge ${t.type}">${t.type === 'in' ? 'In' : 'Out'}</span></td>
+                        <td class="cash-amount ${t.type === 'in' ? 'positive' : 'negative'}">${t.type === 'in' ? '+' : '−'}${APP_CONFIG.currencySymbol}${Number(t.amount).toLocaleString('en-GB', { minimumFractionDigits: 2 })}</td>
+                        <td class="cash-reason">${esc(t.reason || '—')}</td>
+                        <td class="cash-project">${esc(t.project || '—')}</td>
+                        <td>${t.pairedWithTransaction ? `<span class="cash-linked-badge">${esc(t.pairedWithTransaction)}</span>` : '<span class="cash-unlinked">—</span>'}</td>
+                        <td class="cash-actions-cell">
+                            <button type="button" class="btn-icon btn-icon-sm" onclick="editCashTransaction('${t.id}')" title="Edit">✎</button>
+                            <button type="button" class="btn-icon btn-icon-sm btn-icon-danger" onclick="deleteCashTransaction('${t.id}')" title="Delete">×</button>
                         </td>
                     </tr>
                 `).join('')}
@@ -5899,48 +6059,37 @@ function closeCashTransactionModal() {
 
 function submitCashTransaction(event, transactionId) {
     event.preventDefault();
-    
     const form = event.target;
-    const formData = new FormData(form);
-    
+    const amount = parseFloat(form.amount?.value);
+    if (isNaN(amount) || amount <= 0) {
+        if (typeof showToast === 'function') showToast('warning', 'Invalid amount', 'Please enter a positive amount.');
+        return;
+    }
     const transaction = {
         id: transactionId || 'CASH-' + Date.now(),
-        type: formData.get('type'),
-        amount: parseFloat(formData.get('amount')),
-        date: formData.get('date'),
-        reason: formData.get('reason'),
-        project: formData.get('project') || null,
+        type: form.type?.value || 'in',
+        amount,
+        date: form.date?.value || new Date().toISOString().split('T')[0],
+        reason: (form.reason?.value || '').trim(),
+        project: (form.project?.value || '').trim() || null,
         pairedWithTransaction: transactionId ? cashTransactions.find(t => t.id === transactionId)?.pairedWithTransaction : null
     };
-    
     if (transactionId) {
-        // Update existing
         const index = cashTransactions.findIndex(t => t.id === transactionId);
         if (index !== -1) {
             cashTransactions[index] = transaction;
-            showToast('success', 'Updated', 'Cash transaction updated successfully');
+            if (typeof showToast === 'function') showToast('success', 'Updated', 'Transaction updated.');
         }
     } else {
-        // Add new
         cashTransactions.push(transaction);
-        showToast('success', 'Added', 'Cash transaction added successfully');
+        if (typeof showToast === 'function') showToast('success', 'Added', 'Transaction added.');
     }
-    
-    // Save to localStorage
-    try {
-        localStorage.setItem('cashTransactions', JSON.stringify(cashTransactions));
-        console.log('Cash transactions saved to localStorage');
-    } catch (error) {
-        console.error('Error saving to localStorage:', error);
-    }
-    
+    try { localStorage.setItem('cashTransactions', JSON.stringify(cashTransactions)); } catch (e) {}
     closeCashTransactionModal();
-    
-    // Stay on cash view and refresh it
-    switchView('cash');
-    renderCash();
-    renderSummary();
-    renderCosting();
+    if (typeof switchView === 'function') switchView('cash');
+    if (typeof renderCash === 'function') renderCash();
+    if (typeof renderSummary === 'function') renderSummary();
+    if (typeof renderCosting === 'function') renderCosting();
 }
 
 function editCashTransaction(transactionId) {
@@ -5948,179 +6097,323 @@ function editCashTransaction(transactionId) {
 }
 
 function deleteCashTransaction(transactionId) {
-    if (confirm('Are you sure you want to delete this cash transaction?')) {
-        cashTransactions = cashTransactions.filter(t => t.id !== transactionId);
-        
-        // Save to localStorage
-        try {
-            localStorage.setItem('cashTransactions', JSON.stringify(cashTransactions));
-        } catch (error) {
-            console.error('Error saving to localStorage:', error);
-        }
-        
-        showToast('success', 'Deleted', 'Cash transaction deleted successfully');
-        renderCash();
-        renderSummary();
-        renderCosting();
-        renderSummary();
-        renderCosting();
-    }
+    if (!confirm('Delete this transaction? This cannot be undone.')) return;
+    cashTransactions = cashTransactions.filter(t => t.id !== transactionId);
+    try { localStorage.setItem('cashTransactions', JSON.stringify(cashTransactions)); } catch (e) {}
+    if (typeof showToast === 'function') showToast('success', 'Deleted', 'Transaction removed.');
+    if (typeof renderCash === 'function') renderCash();
+    if (typeof renderSummary === 'function') renderSummary();
+    if (typeof renderCosting === 'function') renderCosting();
 }
 
 // ============================================
 // COSTING VIEW
 // ============================================
 
-function renderCosting() {
-    const filtersContainer = document.getElementById('costingFilters');
-    const projectsContainer = document.getElementById('costingProjects');
-    
-    // Calculate cash transactions per project
-    const cashByProject = {};
-    cashTransactions.forEach(cash => {
-        if (cash.project && cash.project !== 'None') {
-            if (!cashByProject[cash.project]) {
-                cashByProject[cash.project] = { in: 0, out: 0 };
-            }
-            if (cash.type === 'in') {
-                cashByProject[cash.project].in += cash.amount;
-            } else {
-                cashByProject[cash.project].out += cash.amount;
-            }
+/** Build project costing from invoices, expenses and cash. Returns array of { id, name, contract, budget, expected, income, cost, breakdown, status, notifications } */
+function buildProjectCosting() {
+    if (typeof generateInvoices === 'function' && (!invoices || invoices.length === 0)) generateInvoices();
+    if (typeof generateExpenses === 'function' && (!expenses || expenses.length === 0)) generateExpenses();
+    if (typeof generateCashTransactions === 'function' && (!cashTransactions || cashTransactions.length === 0)) generateCashTransactions();
+
+    const invList = Array.isArray(invoices) ? invoices : [];
+    const expList = Array.isArray(expenses) ? expenses : [];
+    const cashList = Array.isArray(cashTransactions) ? cashTransactions : [];
+
+    const invoiceByProject = {};
+    invList.forEach(inv => {
+        const p = (inv.project || 'Unallocated').trim() || 'Unallocated';
+        if (!invoiceByProject[p]) invoiceByProject[p] = 0;
+        invoiceByProject[p] += Number(inv.amount) || 0;
+    });
+
+    const expenseByProject = {};
+    expList.forEach(exp => {
+        const p = (exp.project || 'Unallocated').trim() || 'Unallocated';
+        if (!expenseByProject[p]) expenseByProject[p] = 0;
+        expenseByProject[p] += Number(exp.amount) || 0;
+    });
+
+    const cashInByProject = {};
+    const cashOutByProject = {};
+    cashList.forEach(c => {
+        const p = (c.project || 'Unallocated').trim() || 'Unallocated';
+        if (c.type === 'in') {
+            cashInByProject[p] = (cashInByProject[p] || 0) + (Number(c.amount) || 0);
+        } else {
+            cashOutByProject[p] = (cashOutByProject[p] || 0) + (Number(c.amount) || 0);
         }
     });
-    
-    // Simulated project costing data (would come from other apps)
-    const projects = [
-        {
-            id: 'PROJ-001',
-            name: 'Riverside Tower',
-            contract: 'Structural Steelwork',
-            budget: 2400000,
-            expected: 2350000,
-            actual: {
-                procurement: 1850000, // From procure app
-                labour: 320000,      // From on-site app
-                subcontractors: 180000, // From QA tracker
-                cash: (cashByProject['Riverside Tower']?.out || 0) - (cashByProject['Riverside Tower']?.in || 0) // Net cash out
+
+    const projectNames = [...new Set([
+        ...Object.keys(invoiceByProject),
+        ...Object.keys(expenseByProject),
+        ...Object.keys(cashInByProject),
+        ...Object.keys(cashOutByProject),
+        'Riverside Tower', 'Metro Shopping Centre', 'Harbour View Apartments', 'City Plaza', 'Industrial Complex'
+    ])].filter(p => p !== 'Unallocated');
+
+    const budgetConfig = {
+        'Riverside Tower': { budget: 2400000, expected: 2350000, contract: 'Structural Steelwork' },
+        'Metro Shopping Centre': { budget: 1800000, expected: 1780000, contract: 'Mechanical & Electrical' },
+        'Harbour View Apartments': { budget: 950000, expected: 920000, contract: 'Facade & Cladding' },
+        'City Plaza': { budget: 650000, expected: 620000, contract: 'General Building' },
+        'Industrial Complex': { budget: 1200000, expected: 1180000, contract: 'Fit-out & Services' }
+    };
+
+    const currency = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.currencySymbol) || '£';
+    const fmt = (n) => (Number(n) || 0).toLocaleString('en-GB', { minimumFractionDigits: 2 });
+
+    return projectNames.map((name, i) => {
+        const invoicesTotal = invoiceByProject[name] || 0;
+        const expensesTotal = expenseByProject[name] || 0;
+        const cashIn = cashInByProject[name] || 0;
+        const cashOut = cashOutByProject[name] || 0;
+        const income = cashIn;
+        const cost = invoicesTotal + expensesTotal + cashOut;
+        const config = budgetConfig[name] || { budget: cost * 1.2, expected: cost * 1.1, contract: '—' };
+        const budget = config.budget;
+        const expected = config.expected;
+        const varianceBudget = budget - cost;
+        const varianceExpected = expected - cost;
+        const pctUsed = budget > 0 ? (cost / budget) * 100 : 0;
+        let status = 'on-track';
+        if (cost > budget) status = 'over-budget';
+        else if (pctUsed >= 90) status = 'at-risk';
+        else if (cost < budget * 0.7) status = 'under-budget';
+
+        const notifications = [];
+        if (cost > budget) notifications.push({ type: 'over-budget', text: `Over budget by ${currency}${fmt(Math.abs(varianceBudget))}` });
+        else if (pctUsed >= 90) notifications.push({ type: 'at-risk', text: `${pctUsed.toFixed(0)}% of budget used – approaching limit` });
+        if (varianceExpected < 0 && cost <= budget) notifications.push({ type: 'over-expected', text: `Over expected cost by ${currency}${fmt(Math.abs(varianceExpected))}` });
+
+        return {
+            id: 'PROJ-' + String(i + 1).padStart(3, '0'),
+            name,
+            contract: config.contract,
+            budget,
+            expected,
+            income,
+            cost,
+            breakdown: {
+                invoices: invoicesTotal,
+                expenses: expensesTotal,
+                cashIn,
+                cashOut,
+                cashNet: cashIn - cashOut
             },
-            status: 'on-track'
-        },
-        {
-            id: 'PROJ-002',
-            name: 'Metro Shopping Centre',
-            contract: 'Mechanical & Electrical',
-            budget: 1800000,
-            expected: 1780000,
-            actual: {
-                procurement: 1200000,
-                labour: 280000,
-                subcontractors: 150000,
-                cash: (cashByProject['Metro Shopping Centre']?.out || 0) - (cashByProject['Metro Shopping Centre']?.in || 0)
-            },
-            status: 'over-budget'
-        },
-        {
-            id: 'PROJ-003',
-            name: 'Harbour View Apartments',
-            contract: 'Facade & Cladding',
-            budget: 950000,
-            expected: 920000,
-            actual: {
-                procurement: 650000,
-                labour: 140000,
-                subcontractors: 80000,
-                cash: (cashByProject['Harbour View Apartments']?.out || 0) - (cashByProject['Harbour View Apartments']?.in || 0)
-            },
-            status: 'on-track'
-        }
-    ];
-    
-    if (filtersContainer) {
-        filtersContainer.innerHTML = `
-            <div class="filter-group">
-                <select id="costingProjectFilter" onchange="filterCosting()">
-                    <option value="all">All Projects</option>
-                    ${projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
-                </select>
-                <select id="costingStatusFilter" onchange="filterCosting()">
-                    <option value="all">All Status</option>
-                    <option value="on-track">On Track</option>
-                    <option value="over-budget">Over Budget</option>
-                    <option value="under-budget">Under Budget</option>
-                </select>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="costingIncludeCash" checked onchange="filterCosting()">
-                    Include Cash Transactions
-                </label>
+            status,
+            notifications,
+            varianceBudget,
+            varianceExpected,
+            pctUsed
+        };
+    });
+}
+
+function renderCosting() {
+    const projects = buildProjectCosting();
+    const currency = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.currencySymbol) || '£';
+    const fmt = (n) => (Number(n) || 0).toLocaleString('en-GB', { minimumFractionDigits: 2 });
+    const fmt0 = (n) => (Number(n) || 0).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const totalBudget = projects.reduce((s, p) => s + p.budget, 0);
+    const totalCost = projects.reduce((s, p) => s + p.cost, 0);
+    const totalIncome = projects.reduce((s, p) => s + p.income, 0);
+    const overBudgetCount = projects.filter(p => p.status === 'over-budget').length;
+    const atRiskCount = projects.filter(p => p.status === 'at-risk').length;
+    const allNotifications = projects.flatMap(p => p.notifications.map(n => ({ project: p.name, ...n })));
+
+    const statsBar = document.getElementById('costingStatsBar');
+    if (statsBar) {
+        statsBar.innerHTML = `
+            <div class="costing-stat-card">
+                <span class="costing-stat-value">${projects.length}</span>
+                <span class="costing-stat-label">Projects</span>
+            </div>
+            <div class="costing-stat-card">
+                <span class="costing-stat-value">${currency}${fmt0(totalBudget)}</span>
+                <span class="costing-stat-label">Total budget</span>
+            </div>
+            <div class="costing-stat-card highlight-green">
+                <span class="costing-stat-value">${currency}${fmt0(totalIncome)}</span>
+                <span class="costing-stat-label">Paid in</span>
+            </div>
+            <div class="costing-stat-card highlight">
+                <span class="costing-stat-value">${currency}${fmt0(totalCost)}</span>
+                <span class="costing-stat-label">Paid out / cost</span>
+            </div>
+            <div class="costing-stat-card ${totalCost > totalBudget ? 'danger' : ''}">
+                <span class="costing-stat-value">${currency}${fmt0(totalBudget - totalCost)}</span>
+                <span class="costing-stat-label">Variance (budget)</span>
+            </div>
+            ${overBudgetCount > 0 ? `
+            <div class="costing-stat-card danger">
+                <span class="costing-stat-value">${overBudgetCount}</span>
+                <span class="costing-stat-label">Over budget</span>
+            </div>
+            ` : ''}
+            ${atRiskCount > 0 ? `
+            <div class="costing-stat-card warning">
+                <span class="costing-stat-value">${atRiskCount}</span>
+                <span class="costing-stat-label">At risk</span>
+            </div>
+            ` : ''}
+        `;
+    }
+
+    const notifEl = document.getElementById('costingNotifications');
+    if (notifEl) {
+        notifEl.innerHTML = allNotifications.length === 0 ? '' : `
+            <div class="costing-notifications-list">
+                ${allNotifications.slice(0, 8).map(n => `
+                    <div class="costing-notification costing-notification-${n.type}">
+                        <span class="costing-notification-project">${(n.project || '').replace(/</g, '&lt;')}</span>
+                        <span class="costing-notification-text">${(n.text || '').replace(/</g, '&lt;')}</span>
+                    </div>
+                `).join('')}
             </div>
         `;
     }
-    
+
+    const maxCost = Math.max(...projects.map(p => p.cost), 1);
+    const maxBudget = Math.max(...projects.map(p => p.budget), 1);
+    const chartMax = Math.max(maxCost, maxBudget);
+
+    const chartsRow = document.getElementById('costingChartsRow');
+    if (chartsRow) {
+        chartsRow.innerHTML = `
+            <div class="costing-chart-card costing-chart-bar">
+                <h3 class="costing-chart-title">Budget vs cost by project</h3>
+                <div class="costing-bar-chart">
+                    ${projects.map(p => {
+                        const budgetPct = (p.budget / chartMax) * 100;
+                        const costPct = (p.cost / chartMax) * 100;
+                        return `
+                        <div class="costing-bar-row">
+                            <div class="costing-bar-label" title="${(p.name || '').replace(/"/g, '&quot;')}">${(p.name || '').replace(/</g, '&lt;')}</div>
+                            <div class="costing-bar-track">
+                                <div class="costing-bar budget" style="width: ${Math.min(budgetPct, 100)}%" title="Budget ${currency}${fmt(p.budget)}"></div>
+                                <div class="costing-bar cost ${p.cost > p.budget ? 'over' : ''}" style="width: ${Math.min(costPct, 100)}%" title="Cost ${currency}${fmt(p.cost)}"></div>
+                            </div>
+                            <div class="costing-bar-legend">${currency}${fmt0(p.cost)} / ${currency}${fmt0(p.budget)}</div>
+                        </div>
+                    `; }).join('')}
+                </div>
+                <div class="costing-chart-legend">
+                    <span class="costing-legend-item budget">Budget</span>
+                    <span class="costing-legend-item cost">Cost / paid out</span>
+                </div>
+            </div>
+            <div class="costing-chart-card costing-chart-summary">
+                <h3 class="costing-chart-title">Spend by category (all projects)</h3>
+                <div class="costing-summary-bars">
+                    <div class="costing-summary-bar-row">
+                        <span class="costing-summary-label">Invoices</span>
+                        <div class="costing-summary-track"><div class="costing-summary-fill invoices" style="width: ${totalBudget ? Math.min((projects.reduce((s,p) => s + p.breakdown.invoices, 0) / totalBudget) * 100, 100) : 0}%"></div></div>
+                        <span class="costing-summary-value">${currency}${fmt0(projects.reduce((s,p) => s + p.breakdown.invoices, 0))}</span>
+                    </div>
+                    <div class="costing-summary-bar-row">
+                        <span class="costing-summary-label">Expenses</span>
+                        <div class="costing-summary-track"><div class="costing-summary-fill expenses" style="width: ${totalBudget ? Math.min((projects.reduce((s,p) => s + p.breakdown.expenses, 0) / totalBudget) * 100, 100) : 0}%"></div></div>
+                        <span class="costing-summary-value">${currency}${fmt0(projects.reduce((s,p) => s + p.breakdown.expenses, 0))}</span>
+                    </div>
+                    <div class="costing-summary-bar-row">
+                        <span class="costing-summary-label">Cash out</span>
+                        <div class="costing-summary-track"><div class="costing-summary-fill cash" style="width: ${totalBudget ? Math.min((projects.reduce((s,p) => s + p.breakdown.cashOut, 0) / totalBudget) * 100, 100) : 0}%"></div></div>
+                        <span class="costing-summary-value">${currency}${fmt0(projects.reduce((s,p) => s + p.breakdown.cashOut, 0))}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    const projectFilter = document.getElementById('costingProjectFilter')?.value || 'all';
+    const statusFilter = document.getElementById('costingStatusFilter')?.value || 'all';
+    let filtered = projects.filter(p => {
+        if (projectFilter !== 'all' && p.id !== projectFilter) return false;
+        if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+        return true;
+    });
+
+    const filtersContainer = document.getElementById('costingFilters');
+    if (filtersContainer) {
+        filtersContainer.innerHTML = `
+            <div class="costing-filter-row">
+                <label class="filter-label">Project</label>
+                <select id="costingProjectFilter" onchange="filterCosting()">
+                    <option value="all">All projects</option>
+                    ${projects.map(p => `<option value="${p.id}" ${projectFilter === p.id ? 'selected' : ''}>${(p.name || '').replace(/</g, '&lt;')}</option>`).join('')}
+                </select>
+                <label class="filter-label">Status</label>
+                <select id="costingStatusFilter" onchange="filterCosting()">
+                    <option value="all">All status</option>
+                    <option value="on-track" ${statusFilter === 'on-track' ? 'selected' : ''}>On track</option>
+                    <option value="at-risk" ${statusFilter === 'at-risk' ? 'selected' : ''}>At risk</option>
+                    <option value="over-budget" ${statusFilter === 'over-budget' ? 'selected' : ''}>Over budget</option>
+                    <option value="under-budget" ${statusFilter === 'under-budget' ? 'selected' : ''}>Under budget</option>
+                </select>
+            </div>
+        `;
+    }
+
+    const projectsContainer = document.getElementById('costingProjects');
     if (projectsContainer) {
-        projectsContainer.innerHTML = projects.map(project => {
-            const totalActual = project.actual.procurement + project.actual.labour + project.actual.subcontractors + (project.actual.cash || 0);
-            const variance = totalActual - project.expected;
-            const variancePercent = ((variance / project.expected) * 100).toFixed(1);
-            const budgetVariance = totalActual - project.budget;
-            const budgetVariancePercent = ((budgetVariance / project.budget) * 100).toFixed(1);
-            
+        projectsContainer.innerHTML = filtered.map(project => {
+            const v = project.varianceBudget;
+            const vPct = project.budget > 0 ? ((v / project.budget) * 100).toFixed(1) : '0';
             return `
-                <div class="costing-project-card">
-                    <div class="costing-project-header">
+                <div class="costing-project-card costing-status-${project.status}" data-project-id="${project.id}">
+                    <div class="costing-project-card-header">
                         <div>
-                            <h3>${project.name}</h3>
-                            <p class="costing-contract">${project.contract}</p>
+                            <h3 class="costing-project-name">${(project.name || '').replace(/</g, '&lt;')}</h3>
+                            <p class="costing-contract">${(project.contract || '—').replace(/</g, '&lt;')}</p>
                         </div>
-                        <div class="costing-status ${project.status}">${project.status.replace('-', ' ')}</div>
+                        <span class="costing-status-badge costing-status-${project.status}">${(project.status || 'on-track').replace(/-/g, ' ')}</span>
                     </div>
-                    <div class="costing-breakdown">
-                        <div class="costing-category">
-                            <div class="costing-category-label">Procurement</div>
-                            <div class="costing-category-value">${APP_CONFIG.currencySymbol}${project.actual.procurement.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
-                        </div>
-                        <div class="costing-category">
-                            <div class="costing-category-label">Labour</div>
-                            <div class="costing-category-value">${APP_CONFIG.currencySymbol}${project.actual.labour.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
-                        </div>
-                        <div class="costing-category">
-                            <div class="costing-category-label">Subcontractors</div>
-                            <div class="costing-category-value">${APP_CONFIG.currencySymbol}${project.actual.subcontractors.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
-                        </div>
-                        ${project.actual.cash !== undefined ? `
-                        <div class="costing-category">
-                            <div class="costing-category-label">Cash Transactions</div>
-                            <div class="costing-category-value ${project.actual.cash >= 0 ? 'negative' : 'positive'}">${APP_CONFIG.currencySymbol}${Math.abs(project.actual.cash).toLocaleString('en-GB', { minimumFractionDigits: 2 })}</div>
-                        </div>
-                        ` : ''}
+                    ${project.notifications.length > 0 ? `
+                    <div class="costing-project-notifications">
+                        ${project.notifications.map(n => `<div class="costing-notification costing-notification-${n.type}">${(n.text || '').replace(/</g, '&lt;')}</div>`).join('')}
                     </div>
-                    <div class="costing-summary">
-                        <div class="costing-summary-item">
-                            <span class="costing-label">Total Actual:</span>
-                            <span class="costing-value">${APP_CONFIG.currencySymbol}${totalActual.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
+                    ` : ''}
+                    <div class="costing-project-section">
+                        <h4 class="costing-section-title">Paid in (income)</h4>
+                        <div class="costing-kpi costing-income">${currency}${fmt(project.income)}</div>
+                        <p class="costing-section-note">Cash received for this project</p>
+                    </div>
+                    <div class="costing-project-section">
+                        <h4 class="costing-section-title">Paid out / cost breakdown</h4>
+                        <table class="costing-breakdown-table">
+                            <tr><td>Invoices</td><td class="costing-amount">${currency}${fmt(project.breakdown.invoices)}</td></tr>
+                            <tr><td>Expenses</td><td class="costing-amount">${currency}${fmt(project.breakdown.expenses)}</td></tr>
+                            <tr><td>Cash out</td><td class="costing-amount">${currency}${fmt(project.breakdown.cashOut)}</td></tr>
+                            <tr class="costing-total-row"><td>Total cost</td><td class="costing-amount">${currency}${fmt(project.cost)}</td></tr>
+                        </table>
+                    </div>
+                    <div class="costing-project-section costing-budget-section">
+                        <h4 class="costing-section-title">Budget & variance</h4>
+                        <div class="costing-budget-row">
+                            <span>Budget</span>
+                            <span class="costing-amount">${currency}${fmt(project.budget)}</span>
                         </div>
-                        <div class="costing-summary-item">
-                            <span class="costing-label">Expected:</span>
-                            <span class="costing-value">${APP_CONFIG.currencySymbol}${project.expected.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
+                        <div class="costing-budget-row">
+                            <span>Expected</span>
+                            <span class="costing-amount">${currency}${fmt(project.expected)}</span>
                         </div>
-                        <div class="costing-summary-item">
-                            <span class="costing-label">Budget:</span>
-                            <span class="costing-value">${APP_CONFIG.currencySymbol}${project.budget.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <div class="costing-summary-item ${variance >= 0 ? 'negative' : 'positive'}">
-                            <span class="costing-label">Variance (Expected):</span>
-                            <span class="costing-value">${variance >= 0 ? '+' : ''}${APP_CONFIG.currencySymbol}${Math.abs(variance).toLocaleString('en-GB', { minimumFractionDigits: 2 })} (${variancePercent}%)</span>
-                        </div>
-                        <div class="costing-summary-item ${budgetVariance >= 0 ? 'negative' : 'positive'}">
-                            <span class="costing-label">Variance (Budget):</span>
-                            <span class="costing-value">${budgetVariance >= 0 ? '+' : ''}${APP_CONFIG.currencySymbol}${Math.abs(budgetVariance).toLocaleString('en-GB', { minimumFractionDigits: 2 })} (${budgetVariancePercent}%)</span>
+                        <div class="costing-budget-row variance ${v >= 0 ? 'positive' : 'negative'}">
+                            <span>Variance vs budget</span>
+                            <span class="costing-amount">${v >= 0 ? '' : '−'}${currency}${fmt(Math.abs(v))} (${vPct}%)</span>
                         </div>
                     </div>
-                    <div class="costing-progress">
+                    <div class="costing-progress-wrap">
                         <div class="costing-progress-bar">
-                            <div class="costing-progress-fill" style="width: ${(totalActual / project.budget) * 100}%"></div>
+                            <div class="costing-progress-fill ${project.pctUsed > 100 ? 'over' : ''}" style="width: ${Math.min(project.pctUsed, 100)}%"></div>
+                            ${project.pctUsed > 100 ? `<div class="costing-progress-fill over extra" style="width: ${Math.min(project.pctUsed - 100, 20)}%; margin-left: 0;"></div>` : ''}
                         </div>
-                        <div class="costing-progress-label">${((totalActual / project.budget) * 100).toFixed(1)}% of budget used</div>
+                        <div class="costing-progress-labels">
+                            <span>${project.pctUsed.toFixed(1)}% of budget used</span>
+                            <span>${currency}${fmt0(project.cost)} / ${currency}${fmt0(project.budget)}</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -6129,8 +6422,6 @@ function renderCosting() {
 }
 
 function filterCosting() {
-    // Filter logic would go here
-    // The cash transactions are already included in renderCosting()
     renderCosting();
 }
 
@@ -6287,14 +6578,22 @@ function exportReport(reportId, format) {
 // ============================================
 
 function renderSettings() {
+    const headerEl = document.getElementById('settingsPageHeader');
     const gridContainer = document.getElementById('settingsGrid');
     if (!gridContainer) return;
-    
+
+    if (headerEl) {
+        headerEl.innerHTML = `
+            <h2 class="settings-title">Settings</h2>
+            <p class="settings-subtitle">Configure currency, PO formats, invoice defaults and preferences.</p>
+        `;
+    }
+
     // Ensure formats are initialized
     if (poFormatTemplates.length === 0) {
         initializePOFormats();
     }
-    
+
     // Get active format for editing
     const activeFormat = getActivePOFormat();
     if (activeFormat) {
@@ -6302,12 +6601,15 @@ function renderSettings() {
     } else {
         poFormatComponents = [{ type: 'text', value: 'CMS' }, { type: 'random', value: '' }];
     }
-    
+
+    const esc = typeof escapeHtml === 'function' ? escapeHtml : s => (s == null || s === '' ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+
     gridContainer.innerHTML = `
-        <div class="settings-section">
+        <div class="settings-sections">
+        <div class="settings-card">
             <div class="settings-section-header">
                 <h3>PO Format Builder</h3>
-                <p class="settings-section-description">Build your custom Purchase Order format by combining different components</p>
+                <p class="settings-section-desc">Build your Purchase Order number format by combining text, random numbers and project/contract prefixes.</p>
             </div>
             <div class="po-format-builder">
                 <div class="po-format-components" id="poFormatComponents">
@@ -6343,7 +6645,7 @@ function renderSettings() {
                         </div>
                     `).join('')}
                 </div>
-                <button class="btn-secondary btn-sm po-add-component-btn" onclick="addPOComponent()">
+                <button type="button" class="btn-secondary btn-sm po-add-component-btn" onclick="addPOComponent()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
@@ -6397,51 +6699,45 @@ function renderSettings() {
                 </div>
                 
                 <div class="po-format-actions">
-                    <button class="btn-primary" onclick="savePOFormat()">Save as New Format</button>
-                    <button class="btn-secondary" onclick="testPOGeneration()">Test PO Generation</button>
+                    <button type="button" class="btn-primary" onclick="savePOFormat()">Save as new format</button>
+                    <button type="button" class="btn-secondary" onclick="testPOGeneration()">Test PO generation</button>
                 </div>
-                
+
                 <div class="po-saved-formats-section">
                     <div class="po-saved-formats-header">
-                        <h4>Saved Formats</h4>
-                        <p class="po-saved-formats-note">AI uses all formats (including inactive ones) to find POs on documents</p>
+                        <h4>Saved formats</h4>
+                        <p class="po-saved-formats-note">All formats (including inactive) are used to match POs on documents.</p>
                     </div>
                     <div class="po-saved-formats-list">
                         ${poFormatTemplates.length === 0 ? `
                             <div class="po-saved-formats-empty">
-                                <p>No saved formats yet. Use the builder above to create your first PO format.</p>
+                                <p>No saved formats yet. Use the builder above to create your first format.</p>
                             </div>
                         ` : poFormatTemplates.map(template => `
                             <div class="po-saved-format-item ${template.isActive ? 'active' : ''}">
                                 <div class="po-saved-format-main">
                                     <div class="po-saved-format-info">
                                         <div class="po-saved-format-name-row">
-                                            <h5>${template.name}</h5>
+                                            <h5>${esc(template.name)}</h5>
                                             ${template.isDefault ? '<span class="po-default-badge">Default</span>' : ''}
                                         </div>
                                         <div class="po-saved-format-preview">${generatePOFormatPreview(template.components)}</div>
                                         <div class="po-saved-format-meta">
-                                            <span>Created: ${new Date(template.createdAt).toLocaleDateString()}</span>
-                                            ${template.lastUsed ? `<span>• Last used: ${new Date(template.lastUsed).toLocaleDateString()}</span>` : ''}
+                                            <span>Created ${new Date(template.createdAt).toLocaleDateString()}</span>
+                                            ${template.lastUsed ? `<span> · Last used ${new Date(template.lastUsed).toLocaleDateString()}</span>` : ''}
                                         </div>
                                     </div>
                                     <div class="po-saved-format-actions">
                                         <label class="po-active-toggle">
                                             <input type="radio" name="activeFormat" value="${template.id}" ${template.isActive ? 'checked' : ''} onchange="setActivePOFormat('${template.id}')">
-                                            <span class="po-active-toggle-label">${template.isActive ? '✓ Current' : 'Set as Current'}</span>
+                                            <span class="po-active-toggle-label">${template.isActive ? 'Current' : 'Set as current'}</span>
                                         </label>
-                                        <button class="btn-icon-sm" onclick="editPOFormat('${template.id}')" title="Load into Builder">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                            </svg>
+                                        <button type="button" class="btn-icon-sm" onclick="editPOFormat('${template.id}')" title="Load into builder">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         </button>
                                         ${!template.isDefault ? `
-                                            <button class="btn-icon-sm" onclick="deletePOFormat('${template.id}')" title="Delete">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                                </svg>
+                                            <button type="button" class="btn-icon-sm po-delete-btn" onclick="deletePOFormat('${template.id}')" title="Delete">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                             </button>
                                         ` : ''}
                                     </div>
@@ -6452,36 +6748,47 @@ function renderSettings() {
                 </div>
             </div>
         </div>
-        
-        <div class="settings-section">
-            <h3>Accounting Settings</h3>
-            <div class="settings-item">
-                <label>Currency</label>
-                <select id="currencySelect" onchange="saveSettings()">
-                    <option value="GBP" ${APP_CONFIG.currency === 'GBP' ? 'selected' : ''}>GBP (£)</option>
-                    <option value="USD" ${APP_CONFIG.currency === 'USD' ? 'selected' : ''}>USD ($)</option>
-                    <option value="EUR" ${APP_CONFIG.currency === 'EUR' ? 'selected' : ''}>EUR (€)</option>
-                </select>
+
+        <div class="settings-card">
+            <div class="settings-section-header">
+                <h3>Accounting</h3>
+                <p class="settings-section-desc">Currency and tax used across the app.</p>
             </div>
-            <div class="settings-item">
-                <label>VAT Rate (%)</label>
-                <input type="number" id="vatRateInput" value="${APP_CONFIG.vatRate}" step="0.1" onchange="saveSettings()">
+            <div class="settings-section-body">
+                <div class="settings-item">
+                    <label for="currencySelect">Currency</label>
+                    <select id="currencySelect" onchange="saveSettings()">
+                        <option value="GBP" ${APP_CONFIG.currency === 'GBP' ? 'selected' : ''}>GBP (£)</option>
+                        <option value="USD" ${APP_CONFIG.currency === 'USD' ? 'selected' : ''}>USD ($)</option>
+                        <option value="EUR" ${APP_CONFIG.currency === 'EUR' ? 'selected' : ''}>EUR (€)</option>
+                    </select>
+                </div>
+                <div class="settings-item">
+                    <label for="vatRateInput">VAT rate (%)</label>
+                    <input type="number" id="vatRateInput" value="${APP_CONFIG.vatRate}" step="0.1" min="0" max="100" onchange="saveSettings()">
+                </div>
             </div>
         </div>
-        
-        <div class="settings-section">
-            <h3>Invoice Settings</h3>
-            <div class="settings-item">
-                <label>Default Payment Terms (days)</label>
-                <input type="number" id="paymentTermsInput" value="30" onchange="saveSettings()">
+
+        <div class="settings-card">
+            <div class="settings-section-header">
+                <h3>Invoices</h3>
+                <p class="settings-section-desc">Default payment terms and matching behaviour.</p>
             </div>
-            <div class="settings-item">
-                <label>Auto-pair Invoices</label>
-                <label class="switch">
-                    <input type="checkbox" id="autoPairInvoices" onchange="saveSettings()">
-                    <span class="slider"></span>
-                </label>
+            <div class="settings-section-body">
+                <div class="settings-item">
+                    <label for="paymentTermsInput">Default payment terms (days)</label>
+                    <input type="number" id="paymentTermsInput" value="30" min="1" onchange="saveSettings()">
+                </div>
+                <div class="settings-item settings-item-row">
+                    <label for="autoPairInvoices">Auto-pair invoices</label>
+                    <label class="settings-switch">
+                        <input type="checkbox" id="autoPairInvoices" onchange="saveSettings()">
+                        <span class="settings-switch-slider"></span>
+                    </label>
+                </div>
             </div>
+        </div>
         </div>
     `;
     

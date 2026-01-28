@@ -939,14 +939,20 @@
                 </div>
             </section>
 
-            <!-- Rebates View -->
+            <!-- Rebates View – Rebate Manager -->
             <section class="view" id="rebatesView">
                 <div class="rebates-container">
-                    <div class="rebates-agreements" id="rebatesAgreements">
-                        <!-- Rebate agreements will be populated by JavaScript -->
+                    <div class="rebates-page-header" id="rebatesPageHeader">
+                        <!-- Title and subtitle populated by JS -->
+                    </div>
+                    <div class="rebates-stats-bar" id="rebatesStatsBar">
+                        <!-- Stats: agreements count, linked invoices, total estimated rebate -->
+                    </div>
+                    <div class="rebates-agreements rebates-agreements-block" id="rebatesAgreements">
+                        <!-- Supplier rebate agreements list populated by JS -->
                     </div>
                     <div class="rebates-analysis" id="rebatesAnalysis">
-                        <!-- AI analysis will be populated by JavaScript -->
+                        <!-- Summary text populated by JS -->
                     </div>
                 </div>
             </section>
@@ -955,37 +961,32 @@
             <section class="view" id="cashView">
                 <div class="cash-container">
                     <div class="cash-transactions" id="cashTransactions">
-                        <!-- Cash transactions will be populated by JavaScript -->
-                        <div class="empty-state">
-                            <div class="empty-state-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                                    <line x1="1" y1="10" x2="23" y2="10"/>
-                                    <path d="M12 1v22"/>
-                                </svg>
-                            </div>
-                            <h3 class="empty-state-title">No Cash Transactions</h3>
-                            <p class="empty-state-text">Start by adding your first cash transaction</p>
-                            <button class="btn-primary" id="addCashTransactionBtn" onclick="try { window.openCashTransactionModal(); } catch(e) { alert('Error calling function: ' + e.message + ' - Type: ' + typeof window.openCashTransactionModal); }" style="margin-top: 24px;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
-                                    <line x1="12" y1="5" x2="12" y2="19"/>
-                                    <line x1="5" y1="12" x2="19" y2="12"/>
-                                </svg>
-                                <span>Add Cash Transaction</span>
-                            </button>
-                        </div>
+                        <!-- Header, stats, list or empty state populated by renderCash() -->
                     </div>
                 </div>
             </section>
 
-            <!-- Costing View -->
+            <!-- Costing View – Project cost breakdown, income vs spend, budgeting & notifications -->
             <section class="view" id="costingView">
                 <div class="costing-container">
+                    <div class="costing-page-header">
+                        <h2>Project Costing</h2>
+                        <p class="costing-subtitle">Breakdown of current cost per project: how much has been paid in (income) and how much has been expensed or paid out. Budget vs actual with variance and notifications.</p>
+                    </div>
+                    <div class="costing-stats-bar" id="costingStatsBar">
+                        <!-- Stats populated by JS -->
+                    </div>
+                    <div class="costing-notifications" id="costingNotifications">
+                        <!-- Alerts (over budget, approaching) populated by JS -->
+                    </div>
+                    <div class="costing-charts-row" id="costingChartsRow">
+                        <!-- Bar chart + summary chart populated by JS -->
+                    </div>
                     <div class="costing-filters" id="costingFilters">
-                        <!-- Filters will be populated by JavaScript -->
+                        <!-- Filters populated by JS -->
                     </div>
                     <div class="costing-projects" id="costingProjects">
-                        <!-- Projects costing will be populated by JavaScript -->
+                        <!-- Project cards with full breakdown populated by JS -->
                     </div>
                 </div>
             </section>
@@ -1002,12 +1003,11 @@
             <!-- Settings View -->
             <section class="view" id="settingsView">
                 <div class="settings-container">
-                    <div class="settings-intro">
-                        <p class="settings-description">Configure your accounting settings, PO formats, and preferences.</p>
+                    <div class="settings-page-header" id="settingsPageHeader">
+                        <!-- Title and subtitle populated by JS -->
                     </div>
-                    
-                    <div class="settings-grid" id="settingsGrid">
-                        <!-- Settings will be populated by JavaScript -->
+                    <div class="settings-content" id="settingsGrid">
+                        <!-- Sections populated by JavaScript -->
                     </div>
                 </div>
             </section>
