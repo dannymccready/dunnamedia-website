@@ -77,6 +77,10 @@ const WIDGET_CATALOG = {
     text: "This is an important message for the team.",
     imageUrl: "",
   }) },
+  notice: { label: "Notice", seed: () => ({
+    title: "Notice",
+    currentText: "Type a notice...",
+  }) },
   poll: { label: "Poll", seed: () => ({
     question: "What's your favorite feature?",
     options: [
@@ -94,6 +98,19 @@ const WIDGET_CATALOG = {
       { id: rid("resp"), author: "David Lee", text: "I agree with Sarah about customization. Also, can we have more widget templates?", time: "3 days ago" },
     ],
   }) },
+  birthday: { label: "Birthday Shouts", seed: () => {
+    const today = new Date();
+    const todayStr = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    return {
+      employees: [
+        { name: "Jordan Lee", birthDate: todayStr, role: "Design" },
+        { name: "Alex Morgan", birthDate: todayStr, role: "Engineering" },
+        { name: "Sam Taylor", birthDate: "03-15", role: "Product" },
+        { name: "Casey Kim", birthDate: "07-04", role: "Marketing" },
+        { name: "Riley Jones", birthDate: "12-25", role: "Support" },
+      ],
+    };
+  } },
   profile: { label: "Profile", seed: () => ({
     name: "Amelie Laurent",
     role: "UX Designer",
@@ -209,21 +226,23 @@ function baseHomeWidgets() {
     widget("pdf", "PDF", 4, 7, WIDGET_CATALOG.pdf.seed()),
     // Banner (wide)
     widget("banner", "Banner", 4, 1, WIDGET_CATALOG.banner.seed()),
-    // Medium widgets
-    widget("poll", "Medium A", 2, 2, WIDGET_CATALOG.poll.seed()),
+    // Medium / tall widgets
+    widget("birthday", "Birthday Shouts", 2, 4, WIDGET_CATALOG.birthday.seed()),
     widget("poll", "Medium B", 2, 2, WIDGET_CATALOG.poll.seed()),
     widget("poll", "Tall C", 2, 4, WIDGET_CATALOG.poll.seed()),
-    widget("poll", "Medium C", 2, 2, WIDGET_CATALOG.poll.seed()),
-    widget("poll", "Medium D", 2, 2, WIDGET_CATALOG.poll.seed()),
+    widget("message", "Announcements", 2, 2, {
+      header: "Announcements",
+      text: "Add your announcement here. Customise this in Edit mode for everyone to see.",
+      imageUrl: "",
+    }),
   ];
 
   const pdf = items.find((w) => w.type === "pdf");
   const banner = items.find((w) => w.type === "banner");
-  const medA = items.find((w) => w.title === "Medium A");
+  const birthdayA4 = items.find((w) => w.title === "Birthday Shouts");
   const medB = items.find((w) => w.title === "Medium B");
   const tallC = items.find((w) => w.title === "Tall C");
-  const medC = items.find((w) => w.title === "Medium C");
-  const medD = items.find((w) => w.title === "Medium D");
+  const announcementsC2 = items.find((w) => w.title === "Announcements");
 
   const buttons = items.filter((w) => w.type === "button");
   if (buttons[0]) buttons[0].place = { col: 1, row: 2, w: 1, h: 1 };
@@ -233,10 +252,9 @@ function baseHomeWidgets() {
 
   if (banner) banner.place = { col: 1, row: 1, w: 4, h: 1 };
   if (pdf) pdf.place = { col: 5, row: 1, w: 4, h: 7 };
-  if (medA) medA.place = { col: 1, row: 4, w: 2, h: 2 };
+  if (birthdayA4) birthdayA4.place = { col: 1, row: 4, w: 2, h: 4 };
   if (medB) medB.place = { col: 3, row: 4, w: 2, h: 2 };
-  if (medC) medC.place = { col: 1, row: 6, w: 2, h: 2 };
-  if (medD) medD.place = { col: 3, row: 2, w: 2, h: 2 };
+  if (announcementsC2) announcementsC2.place = { col: 3, row: 2, w: 2, h: 2 };
   if (tallC) tallC.place = { col: 3, row: 4, w: 2, h: 4 };
   return items;
 }
@@ -855,9 +873,53 @@ function renderWidgetBody(w) {
       `;
     }
     return `
-      <div class="news notify" data-widget-id="${escapeAttr(w.id)}">
-        <div class="news__title">${escapeHtml(w.data.title || "Notice")}</div>
-        <input class="notify__input" type="text" placeholder="${escapeHtml(w.data.currentText || "Type a notice...")}" />
+      <div class="news notify notify--banner" data-widget-id="${escapeAttr(w.id)}">
+        <div class="notify__header">
+          <span class="news__title">${escapeHtml(w.data.title || "Notice")}</span>
+          <span class="notify__hint">Notices will be sent to all users' desktop and mobile apps as a notification.</span>
+        </div>
+        <div class="notify__row">
+          <input class="notify__input" type="text" placeholder="${escapeHtml(w.data.currentText || "Type a notice...")}" />
+          <details class="notify__dropdown">
+            <summary class="notify__dropdown-label">Send to</summary>
+            <div class="notify__options">
+              <button class="notify__close notify__close--top" type="button">Done</button>
+              <label class="notify__option">
+                <input type="checkbox" data-role="select-all" />
+                <span>Select all</span>
+              </label>
+              <label class="notify__option">
+                <input type="checkbox" data-role="user" />
+                <span>Avery Parker</span>
+              </label>
+              <label class="notify__option">
+                <input type="checkbox" data-role="user" />
+                <span>Jordan Lee</span>
+              </label>
+              <label class="notify__option">
+                <input type="checkbox" data-role="user" />
+                <span>Priya Shah</span>
+              </label>
+              <label class="notify__option">
+                <input type="checkbox" data-role="user" />
+                <span>Miguel Santos</span>
+              </label>
+              <button class="notify__close" type="button">Done</button>
+            </div>
+          </details>
+          <button class="notify__send" type="button">Send</button>
+        </div>
+      </div>
+    `;
+  }
+  if (widgetType === "notice") {
+    return `
+      <div class="notify notify--medium" data-widget-id="${escapeAttr(w.id)}">
+        <div class="notify__header">
+          <span class="notify__title">${escapeHtml(w.data?.title || "Notice")}</span>
+          <span class="notify__hint">Notices will be sent to all users' desktop and mobile apps as a notification.</span>
+        </div>
+        <textarea class="notify__input notify__input--area" rows="3" placeholder="${escapeHtml(w.data?.currentText || "Type a notice...")}"></textarea>
         <div class="notify__actions">
           <details class="notify__dropdown">
             <summary class="notify__dropdown-label">Send to</summary>
@@ -952,6 +1014,34 @@ function renderWidgetBody(w) {
           `
             )
             .join("")}
+        </div>
+      </div>
+    `;
+  }
+  if (widgetType === "birthday") {
+    const today = new Date();
+    const todayStr = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const employees = w.data?.employees || [];
+    const birthdayToday = employees.filter((emp) => (emp.birthDate || "") === todayStr);
+    return `
+      <div class="birthday">
+        <div class="birthday__title">Birthday Shouts</div>
+        <div class="birthday__subtitle">Happy birthday to our colleagues celebrating today!</div>
+        <div class="birthday__list">
+          ${birthdayToday.length === 0
+            ? `<div class="birthday__empty">No birthdays today. Check back tomorrow!</div>`
+            : birthdayToday
+                .map(
+                  (emp) => `
+            <div class="birthday__card">
+              <div class="birthday__icon">🎂</div>
+              <div class="birthday__name">${escapeHtml(emp.name || "Colleague")}</div>
+              ${emp.role ? `<div class="birthday__role">${escapeHtml(emp.role)}</div>` : ""}
+              <div class="birthday__wish">Happy Birthday!</div>
+            </div>
+          `
+                )
+                .join("")}
         </div>
       </div>
     `;
@@ -1179,8 +1269,7 @@ function templatePreviewBlocks(id) {
       { col: 1, row: 1, w: 4, h: 1 },
       { col: 1, row: 2, w: 1, h: 1 },
       { col: 1, row: 3, w: 1, h: 1 },
-      { col: 1, row: 4, w: 2, h: 2 },
-      { col: 1, row: 6, w: 2, h: 2 },
+      { col: 1, row: 4, w: 2, h: 4 },
       { col: 2, row: 2, w: 1, h: 1 },
       { col: 2, row: 3, w: 1, h: 1 },
       { col: 3, row: 2, w: 2, h: 2 },
@@ -1343,6 +1432,18 @@ function openWidgetEditor(widgetId) {
       `;
       formFields.appendChild(row);
       formFields.querySelector("#yoursayQuestion").value = widget.data.question || "";
+      return;
+    }
+    if (widget.type === "notice") {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div>
+          <div class="label">Title</div>
+          <input type="text" id="noticeTitle" />
+        </div>
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#noticeTitle").value = widget.data?.title || "Notice";
       return;
     }
     if (widget.type === "note" || widget.type === "quicknote") {
@@ -1521,6 +1622,8 @@ function openWidgetEditor(widgetId) {
       }));
     } else if (widget.type === "yoursay") {
       widget.data.question = formFields.querySelector("#yoursayQuestion")?.value.trim() || "What are your thoughts?";
+    } else if (widget.type === "notice") {
+      widget.data.title = formFields.querySelector("#noticeTitle")?.value.trim() || "Notice";
     } else if (widget.type === "note" || widget.type === "quicknote") {
       widget.data.text = formFields.querySelector("#noteText")?.value.trim() || "";
     } else if (widget.type === "button") {
@@ -1626,9 +1729,9 @@ function buildWidgetOptions(w) {
   const allowed = {
     tiny: ["button", "quicknote", "banner", "hide"],
     small: ["button", "quicknote", "todo", "hide"],
-    medium: ["poll", "message", "yoursay", "hide"],
-    large: ["pdf", "hide"],
-    tall: ["poll", "message", "yoursay", "hide"],
+    medium: ["poll", "message", "yoursay", "notice", "hide"],
+    large: ["pdf", "birthday", "hide"],
+    tall: ["poll", "message", "yoursay", "birthday", "hide"],
   }[bucket];
 
   const types = allowed.includes(w.type) ? allowed : [w.type, ...allowed];
