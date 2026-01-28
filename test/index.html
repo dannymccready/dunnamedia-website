@@ -78,7 +78,12 @@
               <img class="dash-qr__image" src="./qr.png" alt="Onboarding QR code" />
             </div>
             <div class="dash-header__controls">
-            <button class="btn btn--primary btn--icon" id="editToggle" title="Edit">✏️⚙️</button>
+              <button class="btn btn--primary btn--icon" id="editToggle" title="Edit">✏️⚙️</button>
+              <div class="dash-header__default-tpl" id="defaultTplWrap">
+                <label for="defaultTplSelect">Home template:</label>
+                <select id="defaultTplSelect" class="widget__select" aria-label="Default home template">
+                </select>
+              </div>
               <div class="dash-tabs dash-tabs--header dash-header__tabs" id="tabs"></div>
             </div>
           </div>

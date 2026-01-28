@@ -115,11 +115,29 @@ body{
   justify-items: end;
   align-content: start;
 }
-.dash-header__tabs{
+.dash-header__tabs.dash-tabs{
   display: none;
 }
-.edit-mode .dash-header__tabs{
+.edit-mode .dash-header__tabs.dash-tabs{
   display: flex;
+}
+.dash-header__default-tpl{
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+.edit-mode .dash-header__default-tpl{
+  display: flex;
+}
+.dash-header__default-tpl label{
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.dash-header__default-tpl .widget__select{
+  min-width: 120px;
+  font-size: 12px;
 }
 .header-message-stack{
   width: 100%;
@@ -413,6 +431,11 @@ body{
   display: flex;
   flex-direction: column;
 }
+/* Ensure widget bodies are completely cleared when content changes */
+.widget-tile__body > * {
+  position: relative;
+  z-index: 1;
+}
 .widget-tile__actions{
   display: none;
   gap: 8px;
@@ -486,9 +509,26 @@ body{
   position: relative;
   z-index: 1;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+/* Ensure widget bodies are completely cleared when content changes */
+.widget__body > * {
+  position: relative;
+  z-index: 1;
+}
+.widget--banner .widget__body{
+  overflow: visible;
+}
+.widget--news .widget__body,
+.widget-tile--news .widget-tile__body{
+  padding: 0;
+  gap: 0;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 .widget__actions{
   display: none;
@@ -567,17 +607,256 @@ body{
   gap: 8px;
   height: 100%;
 }
+.widget--pdf{
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.widget--pdf .widget__body,
+.widget-tile--pdf .widget-tile__body{
+  padding: 0;
+  gap: 0;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.pdf-viewer{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.pdf-viewer__iframe{
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.pdf-viewer--placeholder{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15,23,42,0.04);
+  border: 1px dashed rgba(15,23,42,0.15);
+  border-radius: var(--radius);
+}
+.pdf-viewer__placeholder{
+  font-size: 13px;
+  color: var(--muted);
+  padding: 16px;
+}
+.pdf-upload__hint{
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 8px;
+}
 .news{
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: block;
+  overflow: auto;
+}
+.news__viewer{
+  width: 100%;
+  height: 300%;
+  border: none;
+  display: block;
+}
+.events{
+  display: grid;
+  gap: 8px;
+}
+.events__title{
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.events__list{
+  display: grid;
+  gap: 8px;
+}
+.events__item{
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,0.1);
+  background: rgba(255,255,255,0.75);
+  font-size: 12px;
+}
+.events__date{
+  font-weight: 800;
+  color: #0b57d0;
+}
+.events__name{
+  font-weight: 700;
+}
+.events__meta{
+  color: var(--muted);
+  font-size: 11px;
+}
+.message{
   display: grid;
   gap: 10px;
   height: 100%;
 }
-.news__viewer{
-  width: 100%;
+.message__header{
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+.message__content{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.message__image{
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,0.12);
+}
+.message__text{
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.poll{
+  display: grid;
+  gap: 10px;
   height: 100%;
-  border: none;
-  border-radius: 12px;
-  background: #ffffff;
+}
+.poll__question{
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+.poll__options{
+  display: grid;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+.poll__option{
+  display: grid;
+  gap: 6px;
+}
+.poll__vote-btn{
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,0.14);
+  background: rgba(255,255,255,0.92);
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.poll__vote-btn:hover{
+  background: rgba(26,115,232,0.08);
+  border-color: rgba(26,115,232,0.25);
+}
+.poll__results{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.poll__bar{
+  flex: 1 1 auto;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.08);
+  overflow: hidden;
+}
+.poll__bar-fill{
+  height: 100%;
+  background: linear-gradient(90deg, rgba(26,115,232,0.6), rgba(26,115,232,0.8));
+  transition: width 200ms ease;
+}
+.poll__percentage{
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 36px;
+  text-align: right;
+}
+.yoursay{
+  display: grid;
+  gap: 10px;
+  height: 100%;
+  grid-template-rows: auto auto 1fr;
+}
+.yoursay__question{
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+.yoursay__input-area{
+  display: grid;
+  gap: 8px;
+}
+.yoursay__input{
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,0.14);
+  padding: 8px 10px;
+  font-size: 12px;
+  background: rgba(255,255,255,0.92);
+  resize: vertical;
+}
+.yoursay__submit{
+  border-radius: 10px;
+  border: 1px solid rgba(26,115,232,0.35);
+  background: rgba(26,115,232,0.12);
+  color: #0b57d0;
+  font-weight: 700;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.yoursay__responses{
+  display: grid;
+  gap: 8px;
+  overflow: auto;
+  min-height: 0;
+}
+.yoursay__response{
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,0.1);
+  background: rgba(255,255,255,0.75);
+}
+.yoursay__response-author{
+  font-size: 11px;
+  font-weight: 700;
+  color: #0b57d0;
+}
+.yoursay__response-text{
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text);
+}
+.yoursay__response-time{
+  font-size: 10px;
+  color: var(--muted);
 }
 .notify__input{
   height: 28px;
@@ -587,13 +866,20 @@ body{
   font-size: 12px;
   background: rgba(255,255,255,0.92);
 }
+.notify__actions{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
 .notify__dropdown{
   border: 1px solid rgba(15,23,42,0.14);
   border-radius: 10px;
   background: rgba(255,255,255,0.92);
   padding: 6px 8px;
   position: relative;
-  z-index: 3;
+  z-index: 50;
+  min-width: 220px;
 }
 .notify__dropdown-label{
   cursor: pointer;
@@ -608,8 +894,9 @@ body{
   position: absolute;
   top: -60px;
   left: -10px;
-  width: calc(100% + 20px);
-  max-height: 140px;
+  width: calc(100% + 40px);
+  min-width: 260px;
+  max-height: 280px;
   overflow: auto;
   display: grid;
   gap: 6px;
@@ -618,7 +905,7 @@ body{
   border: 1px solid rgba(15,23,42,0.12);
   background: rgba(255,255,255,0.96);
   box-shadow: 0 10px 30px rgba(2,6,23,0.12);
-  z-index: 2;
+  z-index: 60;
 }
 .notify__close{
   margin-top: 4px;
@@ -746,22 +1033,41 @@ body{
 }
 
 .button-widget{
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 100%;
+  width: 100%;
+  cursor: pointer;
 }
 .button-widget__btn{
   border-radius: 14px;
   border: none;
-  background: linear-gradient(180deg, rgba(26,115,232,0.18), rgba(26,115,232,0.08));
+  background: transparent;
   color: #0b57d0;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 12px;
+  padding: 8px;
   height: 100%;
   width: 100%;
+}
+.button-widget__btn:hover{
+  background: rgba(26,115,232,0.08);
+}
+.button-widget__label{
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.button-widget__image{
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
 }
 .button-widget__sub{
   font-size: 11px;

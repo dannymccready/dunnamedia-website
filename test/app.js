@@ -20,6 +20,7 @@ const SYSTEM_APPS = [
 
 const WIDGET_CATALOG = {
   hide: { label: "Hide", seed: () => ({}) },
+  pdf: { label: "PDF", seed: () => ({ template: "cms-news", src: "./new.pdf" }) },
   news: { label: "News", seed: () => ({
     items: [
       { title: "Quarterly update posted", meta: "2 hours ago" },
@@ -28,12 +29,19 @@ const WIDGET_CATALOG = {
       { title: "Operations checklist updated", meta: "Fri" },
     ],
   }) },
-  notify: { label: "Notify", seed: () => ({
-    title: "Notifications",
+  banner: { label: "Banner", seed: () => ({
+    template: "notify",
+    title: "Notice",
+    currentText: "System maintenance scheduled at 6 PM.",
     items: [
       { title: "Action required: Review draft policy", meta: "Today" },
       { title: "New message from Operations", meta: "1 hour ago" },
       { title: "System maintenance scheduled", meta: "Tomorrow" },
+    ],
+    events: [
+      { date: "Mar 12", title: "Town hall", meta: "10:00 AM" },
+      { date: "Mar 15", title: "Design review", meta: "2:00 PM" },
+      { date: "Mar 19", title: "Ops sync", meta: "9:30 AM" },
     ],
   }) },
   stats: { label: "Metrics", seed: () => ({
@@ -44,13 +52,6 @@ const WIDGET_CATALOG = {
     ],
   }) },
   chart: { label: "Chart", seed: () => ({ hint: "Engagement" }) },
-  list: { label: "List", seed: () => ({
-    items: [
-      { title: "New contract signed", meta: "2 hours ago" },
-      { title: "Quarterly review added", meta: "Yesterday" },
-      { title: "New dashboard draft", meta: "Mon" },
-    ],
-  }) },
   timeline: { label: "Timeline", seed: () => ({ items: ["Kickoff", "Build", "QA", "Launch"] }) },
   note: { label: "Note", seed: () => ({ text: "Add a longer note here for context." }) },
   quicknote: { label: "Quick note", seed: () => ({ text: "Quick note..." }) },
@@ -68,8 +69,31 @@ const WIDGET_CATALOG = {
     mode: "page",
     url: "https://example.com",
     pageId: "overview",
+    imageUrl: "",
   }) },
   add: { label: "Add", seed: () => ({ text: "Add widget" }) },
+  message: { label: "Message", seed: () => ({
+    header: "Announcement",
+    text: "This is an important message for the team.",
+    imageUrl: "",
+  }) },
+  poll: { label: "Poll", seed: () => ({
+    question: "What's your favorite feature?",
+    options: [
+      { id: rid("opt"), text: "Option 1", votes: 0 },
+      { id: rid("opt"), text: "Option 2", votes: 0 },
+      { id: rid("opt"), text: "Option 3", votes: 0 },
+    ],
+  }) },
+  yoursay: { label: "Your say", seed: () => ({
+    question: "What improvements would you like to see in our dashboard?",
+    responses: [
+      { id: rid("resp"), author: "Sarah Chen", text: "I think we should add more customization options for the widgets. The current layout is good but could be more flexible.", time: "2 hours ago" },
+      { id: rid("resp"), author: "Mike Johnson", text: "Would love to see dark mode support! Also, the notification system could be improved.", time: "1 day ago" },
+      { id: rid("resp"), author: "Emma Wilson", text: "The dashboard is great overall. Maybe add some analytics widgets to track usage?", time: "2 days ago" },
+      { id: rid("resp"), author: "David Lee", text: "I agree with Sarah about customization. Also, can we have more widget templates?", time: "3 days ago" },
+    ],
+  }) },
   profile: { label: "Profile", seed: () => ({
     name: "Amelie Laurent",
     role: "UX Designer",
@@ -110,13 +134,13 @@ const TEMPLATES = [
       // Row 3: 4 mediums (1 column wide each)
       const mediumCols = [1, 3, 5, 7];
       mediumCols.forEach((col, idx) => {
-        const m = widget(idx % 2 === 0 ? "stats" : "list", `Medium ${idx + 1}`, 2, 2, WIDGET_CATALOG.stats.seed());
+        const m = widget("poll", `Medium ${idx + 1}`, 2, 2, WIDGET_CATALOG.poll.seed());
         m.place = { col, row: 3, w: 2, h: 2 };
         widgets.push(m);
       });
       // Row 5: 4 talls (1 column wide, 4 rows high)
       mediumCols.forEach((col, idx) => {
-        const t = widget("list", `Tall ${idx + 1}`, 2, 4, WIDGET_CATALOG.list.seed());
+        const t = widget("poll", `Tall ${idx + 1}`, 2, 4, WIDGET_CATALOG.poll.seed());
         t.place = { col, row: 5, w: 2, h: 4 };
         widgets.push(t);
       });
@@ -131,14 +155,14 @@ const TEMPLATES = [
       // Row 1: 6 mediums
       const mediumCols = [1, 3, 5, 7];
       mediumCols.forEach((col, idx) => {
-        const m = widget(idx % 2 === 0 ? "stats" : "list", `Medium ${idx + 1}`, 2, 2, WIDGET_CATALOG.stats.seed());
+        const m = widget("poll", `Medium ${idx + 1}`, 2, 2, WIDGET_CATALOG.poll.seed());
         m.place = { col, row: 1, w: 2, h: 2 };
         widgets.push(m);
       });
       // Row 3: 2 mediums, 4 buttons
-      const m1 = widget("stats", "Medium A", 2, 2, WIDGET_CATALOG.stats.seed());
+      const m1 = widget("poll", "Medium A", 2, 2, WIDGET_CATALOG.poll.seed());
       m1.place = { col: 1, row: 3, w: 2, h: 2 };
-      const m2 = widget("list", "Medium B", 2, 2, WIDGET_CATALOG.list.seed());
+      const m2 = widget("poll", "Medium B", 2, 2, WIDGET_CATALOG.poll.seed());
       m2.place = { col: 3, row: 3, w: 2, h: 2 };
       widgets.push(m1, m2);
       const btnCols = [5, 6, 7, 8];
@@ -163,6 +187,17 @@ const TEMPLATES = [
   },
 ];
 
+function getTemplateWidgets(templateId) {
+  const t = TEMPLATES.find((tpl) => tpl.id === templateId) || TEMPLATES[0];
+  return t.widgets();
+}
+
+function cloneWidgets(widgets) {
+  const out = structuredClone(widgets || []);
+  out.forEach((w) => { w.id = rid("w"); });
+  return out;
+}
+
 function baseHomeWidgets() {
   const items = [
     // Row 1: buttons
@@ -170,34 +205,39 @@ function baseHomeWidgets() {
     widget("button", "Button 2", 1, 1, { label: "", mode: "app", appId: "finance", url: "" }),
     widget("button", "Button 3", 1, 1, { label: "", mode: "app", appId: "people", url: "" }),
     widget("button", "Button 4", 1, 1, { label: "", mode: "app", appId: "ops", url: "" }),
-    // News (large)
-    widget("news", "News", 4, 7, WIDGET_CATALOG.news.seed()),
-    // Notify (wide)
-    widget("notify", "Notify", 4, 2, WIDGET_CATALOG.notify.seed()),
+    // PDF (large)
+    widget("pdf", "PDF", 4, 7, WIDGET_CATALOG.pdf.seed()),
+    // Banner (wide)
+    widget("banner", "Banner", 4, 1, WIDGET_CATALOG.banner.seed()),
     // Medium widgets
-    widget("stats", "Medium A", 2, 2, WIDGET_CATALOG.stats.seed()),
-    widget("list", "Medium B", 2, 2, WIDGET_CATALOG.list.seed()),
-    widget("stats", "Medium C", 2, 2, WIDGET_CATALOG.stats.seed()),
-    widget("list", "Medium D", 2, 2, WIDGET_CATALOG.list.seed()),
+    widget("poll", "Medium A", 2, 2, WIDGET_CATALOG.poll.seed()),
+    widget("poll", "Medium B", 2, 2, WIDGET_CATALOG.poll.seed()),
+    widget("poll", "Tall C", 2, 4, WIDGET_CATALOG.poll.seed()),
+    widget("poll", "Medium C", 2, 2, WIDGET_CATALOG.poll.seed()),
+    widget("poll", "Medium D", 2, 2, WIDGET_CATALOG.poll.seed()),
   ];
 
-  const news = items.find((w) => w.type === "news");
-  const notify = items.find((w) => w.type === "notify");
+  const pdf = items.find((w) => w.type === "pdf");
+  const banner = items.find((w) => w.type === "banner");
   const medA = items.find((w) => w.title === "Medium A");
   const medB = items.find((w) => w.title === "Medium B");
+  const tallC = items.find((w) => w.title === "Tall C");
   const medC = items.find((w) => w.title === "Medium C");
   const medD = items.find((w) => w.title === "Medium D");
 
-  items.forEach((w, idx) => {
-    if (w.type === "button") w.place = { col: idx + 1, row: 1, w: 1, h: 1 };
-  });
+  const buttons = items.filter((w) => w.type === "button");
+  if (buttons[0]) buttons[0].place = { col: 1, row: 2, w: 1, h: 1 };
+  if (buttons[1]) buttons[1].place = { col: 2, row: 2, w: 1, h: 1 };
+  if (buttons[2]) buttons[2].place = { col: 1, row: 3, w: 1, h: 1 };
+  if (buttons[3]) buttons[3].place = { col: 2, row: 3, w: 1, h: 1 };
 
-  if (medA) medA.place = { col: 1, row: 2, w: 2, h: 2 };
-  if (medB) medB.place = { col: 3, row: 2, w: 2, h: 2 };
-  if (news) news.place = { col: 5, row: 1, w: 4, h: 7 };
-  if (notify) notify.place = { col: 1, row: 4, w: 4, h: 2 };
+  if (banner) banner.place = { col: 1, row: 1, w: 4, h: 1 };
+  if (pdf) pdf.place = { col: 5, row: 1, w: 4, h: 7 };
+  if (medA) medA.place = { col: 1, row: 4, w: 2, h: 2 };
+  if (medB) medB.place = { col: 3, row: 4, w: 2, h: 2 };
   if (medC) medC.place = { col: 1, row: 6, w: 2, h: 2 };
-  if (medD) medD.place = { col: 3, row: 6, w: 2, h: 2 };
+  if (medD) medD.place = { col: 3, row: 2, w: 2, h: 2 };
+  if (tallC) tallC.place = { col: 3, row: 4, w: 2, h: 4 };
   return items;
 }
 
@@ -231,6 +271,7 @@ function withHomePlacement(widgets) {
 let state = {
   editMode: false,
   activePageId: "overview",
+  defaultHomeTemplateId: "tpl-home",
   headerMessageFields: [
     {
       text: "Welcome to the team dashboard.",
@@ -276,6 +317,18 @@ let state = {
 };
 
 function init() {
+  // Load default home template and apply to overview page
+  state.defaultHomeTemplateId = localStorage.getItem("defaultHomeTemplateId") || "tpl-home";
+  const overview = state.pages.find((p) => p.id === "overview");
+  if (overview) {
+    const pageSource = state.pages.find((p) => p.id === state.defaultHomeTemplateId);
+    if (pageSource) {
+      overview.widgets = cloneWidgets(pageSource.widgets);
+    } else {
+      overview.widgets = getTemplateWidgets(state.defaultHomeTemplateId || "tpl-home");
+    }
+  }
+
   syncHeaderFields();
   wireUI();
   render();
@@ -287,6 +340,21 @@ function wireUI() {
     state.editMode = !state.editMode;
     render();
   });
+
+  const defaultTplSelect = document.getElementById("defaultTplSelect");
+  if (defaultTplSelect) {
+    defaultTplSelect.addEventListener("change", () => {
+      const pageId = defaultTplSelect.value;
+      state.defaultHomeTemplateId = pageId;
+      localStorage.setItem("defaultHomeTemplateId", pageId);
+      const ov = state.pages.find((p) => p.id === "overview");
+      const src = state.pages.find((p) => p.id === pageId);
+      if (ov && src && src.id !== ov.id) {
+        ov.widgets = cloneWidgets(src.widgets);
+      }
+      render();
+    });
+  }
   els.modalBackdrop.addEventListener("click", closeModal);
   els.modalCloseBtn.addEventListener("click", closeModal);
   els.headerRows.forEach((row, idx) => {
@@ -333,6 +401,18 @@ function wireUI() {
 function render() {
   document.body.classList.toggle("edit-mode", state.editMode);
   els.editToggle.innerHTML = state.editMode ? "💾" : "✏️";
+
+  const defaultTplSelect = document.getElementById("defaultTplSelect");
+  if (defaultTplSelect && state.pages.length > 0) {
+    defaultTplSelect.innerHTML = state.pages
+      .map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.name)}</option>`)
+      .join("");
+    const validId = state.pages.some((p) => p.id === state.defaultHomeTemplateId)
+      ? state.defaultHomeTemplateId
+      : (state.pages.find((p) => p.id === "overview")?.id || state.pages[0]?.id || "");
+    defaultTplSelect.value = validId || "";
+  }
+
   els.headerRows.forEach((row, idx) => {
     const field = row.querySelector(".header-message__field");
     if (!field) return;
@@ -355,7 +435,7 @@ function renderTabs() {
       const active = p.id === state.activePageId ? "tab--active" : "";
       const home = isHome ? "tab--home" : "";
       const del =
-        state.editMode && !isHome
+        state.editMode && state.pages.length > 1
           ? `<span class="tab__delete" data-action="delete-page" data-page-id="${escapeAttr(p.id)}" title="Delete">✕</span>`
           : "";
       return `<button class="tab ${active} ${home}" data-page-id="${escapeAttr(p.id)}">
@@ -383,8 +463,9 @@ function renderTabs() {
       e.stopPropagation();
       const id = btn.getAttribute("data-page-id");
       if (!state.editMode) return;
+      if (state.pages.length <= 1) return; // always keep at least one
       const page = state.pages.find((p) => p.id === id);
-      if (!page || page.name === "Home" || page.id === "home") return;
+      if (!page) return;
       const ok = confirm(`Delete page "${page.name}"?`);
       if (!ok) return;
       state.pages = state.pages.filter((p) => p.id !== id);
@@ -449,7 +530,13 @@ function updateHeaderRowControls(targetIdx) {
 
 function renderWidgets() {
   const page = state.pages.find((p) => p.id === state.activePageId) || state.pages[0];
+  // Completely clear widgets container - remove all children
+  while (els.widgets.firstChild) {
+    els.widgets.removeChild(els.widgets.firstChild);
+  }
   els.widgets.innerHTML = "";
+  // Force a reflow to ensure DOM is completely cleared
+  void els.widgets.offsetHeight;
 
   if (page.id === "home") {
     renderHomeLayout(page);
@@ -476,9 +563,10 @@ function renderWidgets() {
           </div>`
         : "";
 
+      const widgetBodyHtml = renderWidgetBody(w);
       node.innerHTML = `
         ${overlayHtml}
-        <div class="widget__body">${renderWidgetBody(w)}</div>
+        <div class="widget__body">${widgetBodyHtml}</div>
       `;
 
       els.widgets.appendChild(node);
@@ -525,6 +613,8 @@ function renderWidgets() {
     const userBoxes = Array.from(notifyEl.querySelectorAll("[data-role='user']"));
     const closeBtn = notifyEl.querySelector(".notify__close");
     const dropdown = notifyEl.querySelector(".notify__dropdown");
+    const sendBtn = notifyEl.querySelector(".notify__send");
+    const input = notifyEl.querySelector(".notify__input");
     if (!selectAll || userBoxes.length === 0) return;
 
     const syncSelectAll = () => {
@@ -547,6 +637,23 @@ function renderWidgets() {
         dropdown?.removeAttribute("open");
       });
     });
+
+    sendBtn?.addEventListener("click", () => {
+      const text = input?.value.trim();
+      if (!text) return toast("Enter a notice to send.");
+      const ok = confirm("Send this notice?");
+      if (!ok) return;
+      const widgetId = notifyEl.closest("[data-widget-id]")?.getAttribute("data-widget-id");
+      const widget = widgetId ? findWidget(widgetId) : null;
+      if (widget?.data) {
+        widget.data.currentText = text;
+      }
+      if (input) {
+        input.value = "";
+        input.placeholder = text;
+      }
+      toast("Notice sent.");
+    });
   });
 
   els.widgets.querySelectorAll("[data-action='todo-toggle']").forEach((box) => {
@@ -557,6 +664,62 @@ function renderWidgets() {
       const item = widget?.data?.items?.find((i) => i.id === todoId);
       if (!item) return;
       item.done = box.checked;
+    });
+  });
+
+  els.widgets.querySelectorAll("[data-action='poll-vote']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-widget-id");
+      const optionId = btn.getAttribute("data-option-id");
+      const widget = findWidget(id);
+      if (!widget) return;
+      const option = widget.data?.options?.find((o) => o.id === optionId);
+      if (!option) return;
+      option.votes = (option.votes || 0) + 1;
+      renderWidgets();
+    });
+  });
+
+  els.widgets.querySelectorAll("[data-action='yoursay-submit']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-widget-id");
+      const widget = findWidget(id);
+      if (!widget) return;
+      const input = btn.parentElement?.querySelector(".yoursay__input");
+      const text = input?.value.trim();
+      if (!text) return;
+      if (!widget.data.responses) widget.data.responses = [];
+      widget.data.responses.push({
+        id: rid("resp"),
+        author: "You",
+        text,
+        time: "Just now",
+      });
+      if (input) input.value = "";
+      renderWidgets();
+    });
+  });
+
+  els.widgets.querySelectorAll(".yoursay__input").forEach((input) => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        const widgetId = input.closest(".yoursay")?.getAttribute("data-widget-id");
+        if (!widgetId) return;
+        const widget = findWidget(widgetId);
+        if (!widget) return;
+        const text = input.value.trim();
+        if (!text) return;
+        if (!widget.data.responses) widget.data.responses = [];
+        widget.data.responses.push({
+          id: rid("resp"),
+          author: "You",
+          text,
+          time: "Just now",
+        });
+        input.value = "";
+        renderWidgets();
+      }
     });
   });
 }
@@ -618,11 +781,12 @@ function renderTile(w, opts = {}) {
   }
   if (opts.forceTall) node.style.gridRow = "span 6";
 
+  const widgetBodyHtml = renderWidgetBody(w);
   node.innerHTML = `
     ${state.editMode && !["profile", "add"].includes(w.type) ? `<div class="widget__overlay">
       <button class="widget__overlay-btn" data-action="edit-widget" data-widget-id="${escapeAttr(w.id)}" title="Edit">✏️</button>
     </div>` : ""}
-    <div class="widget-tile__body">${renderWidgetBody(w)}</div>
+    <div class="widget-tile__body">${widgetBodyHtml}</div>
   `;
   return node;
 }
@@ -635,50 +799,160 @@ function seedHomeProfile(page) {
 }
 
 function renderWidgetBody(w) {
-  if (w.type === "hide") {
+  // Ensure we're rendering based on the current widget type
+  const widgetType = w.type || "hide";
+  
+  if (widgetType === "hide") {
     return "";
   }
-  if (w.type === "news") {
+  if (widgetType === "pdf") {
+    const tpl = w.data?.template || "cms-news";
+    const src = tpl === "pdf-upload" && w.data?.uploadedSrc
+      ? w.data.uploadedSrc
+      : (tpl === "cms-news" ? "./new.pdf" : (w.data?.uploadedSrc || ""));
+    if (tpl === "pdf-upload" && !w.data?.uploadedSrc) {
+      return `
+        <div class="pdf-viewer pdf-viewer--placeholder">
+          <div class="pdf-viewer__placeholder">Upload a PDF in Edit mode</div>
+        </div>
+      `;
+    }
     return `
-      <div class="news">
-        <div class="news__title">News</div>
-        <iframe class="news__viewer" src="./news.pdf" title="News PDF"></iframe>
+      <div class="pdf-viewer">
+        <iframe class="pdf-viewer__iframe" src="${escapeAttr(src)}" type="application/pdf"></iframe>
       </div>
     `;
   }
-  if (w.type === "notify") {
+  if (widgetType === "news") {
     return `
-      <div class="news notify">
-        <div class="news__title">${escapeHtml(w.data.title || "Notifications")}</div>
-        <input class="notify__input" type="text" placeholder="Type a notification..." />
-        <details class="notify__dropdown">
-          <summary class="notify__dropdown-label">Send to</summary>
-          <div class="notify__options">
-            <button class="notify__close notify__close--top" type="button">Done</button>
-            <label class="notify__option">
-              <input type="checkbox" data-role="select-all" />
-              <span>Select all</span>
-            </label>
-            <label class="notify__option">
-              <input type="checkbox" data-role="user" />
-              <span>Avery Parker</span>
-            </label>
-            <label class="notify__option">
-              <input type="checkbox" data-role="user" />
-              <span>Jordan Lee</span>
-            </label>
-            <label class="notify__option">
-              <input type="checkbox" data-role="user" />
-              <span>Priya Shah</span>
-            </label>
-            <label class="notify__option">
-              <input type="checkbox" data-role="user" />
-              <span>Miguel Santos</span>
-            </label>
-            <button class="notify__close" type="button">Done</button>
+      <div class="news">
+        <iframe class="news__viewer" src="./new.pdf" type="application/pdf"></iframe>
+      </div>
+    `;
+  }
+  if (widgetType === "banner") {
+    const template = w.data?.template || "notify";
+    if (template === "events") {
+      return `
+        <div class="news events">
+          <div class="events__title">Events</div>
+          <div class="events__list">
+            ${(w.data?.events || [])
+              .map(
+                (item) => `
+            <div class="events__item">
+              <div class="events__date">${escapeHtml(item.date)}</div>
+              <div class="events__content">
+                <div class="events__name">${escapeHtml(item.title)}</div>
+                <div class="events__meta">${escapeHtml(item.meta)}</div>
+              </div>
+            </div>
+          `
+              )
+              .join("")}
           </div>
-        </details>
-        <button class="notify__send" type="button">Send</button>
+        </div>
+      `;
+    }
+    return `
+      <div class="news notify" data-widget-id="${escapeAttr(w.id)}">
+        <div class="news__title">${escapeHtml(w.data.title || "Notice")}</div>
+        <input class="notify__input" type="text" placeholder="${escapeHtml(w.data.currentText || "Type a notice...")}" />
+        <div class="notify__actions">
+          <details class="notify__dropdown">
+            <summary class="notify__dropdown-label">Send to</summary>
+            <div class="notify__options">
+              <button class="notify__close notify__close--top" type="button">Done</button>
+              <label class="notify__option">
+                <input type="checkbox" data-role="select-all" />
+                <span>Select all</span>
+              </label>
+              <label class="notify__option">
+                <input type="checkbox" data-role="user" />
+                <span>Avery Parker</span>
+              </label>
+              <label class="notify__option">
+                <input type="checkbox" data-role="user" />
+                <span>Jordan Lee</span>
+              </label>
+              <label class="notify__option">
+                <input type="checkbox" data-role="user" />
+                <span>Priya Shah</span>
+              </label>
+              <label class="notify__option">
+                <input type="checkbox" data-role="user" />
+                <span>Miguel Santos</span>
+              </label>
+              <button class="notify__close" type="button">Done</button>
+            </div>
+          </details>
+          <button class="notify__send" type="button">Send</button>
+        </div>
+      </div>
+    `;
+  }
+  if (widgetType === "message") {
+    return `
+      <div class="message">
+        <div class="message__header">${escapeHtml(w.data?.header || "Message")}</div>
+        <div class="message__content">
+          ${w.data?.imageUrl ? `<img class="message__image" src="${escapeAttr(w.data.imageUrl)}" alt="" />` : ""}
+          <div class="message__text">${escapeHtml(w.data?.text || "")}</div>
+        </div>
+      </div>
+    `;
+  }
+  if (widgetType === "poll") {
+    const totalVotes = (w.data?.options || []).reduce((sum, opt) => sum + (opt.votes || 0), 0);
+    return `
+      <div class="poll" data-widget-id="${escapeAttr(w.id)}">
+        <div class="poll__question">${escapeHtml(w.data?.question || "Poll question")}</div>
+        <div class="poll__options">
+          ${(w.data?.options || [])
+            .map(
+              (opt) => {
+                const pct = totalVotes > 0 ? Math.round((opt.votes || 0) / totalVotes * 100) : 0;
+                return `
+              <div class="poll__option">
+                <button class="poll__vote-btn" data-action="poll-vote" data-widget-id="${escapeAttr(w.id)}" data-option-id="${escapeAttr(opt.id)}">
+                  ${escapeHtml(opt.text || "Option")}
+                </button>
+                <div class="poll__results">
+                  <div class="poll__bar">
+                    <div class="poll__bar-fill" style="width: ${pct}%"></div>
+                  </div>
+                  <div class="poll__percentage">${pct}%</div>
+                </div>
+              </div>
+            `;
+              }
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+  if (widgetType === "yoursay") {
+    return `
+      <div class="yoursay" data-widget-id="${escapeAttr(w.id)}">
+        <div class="yoursay__question">${escapeHtml(w.data?.question || "What are your thoughts?")}</div>
+        <div class="yoursay__input-area">
+          <textarea class="yoursay__input" placeholder="Add your comment..." rows="2"></textarea>
+          <button class="yoursay__submit" data-action="yoursay-submit" data-widget-id="${escapeAttr(w.id)}">Submit</button>
+        </div>
+        <div class="yoursay__responses">
+          ${(w.data?.responses || [])
+            .map(
+              (resp) => `
+            <div class="yoursay__response">
+              <div class="yoursay__response-author">${escapeHtml(resp.author || "Anonymous")}</div>
+              <div class="yoursay__response-text">${escapeHtml(resp.text || "")}</div>
+              <div class="yoursay__response-time">${escapeHtml(resp.time || "Just now")}</div>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
       </div>
     `;
   }
@@ -702,22 +976,6 @@ function renderWidgetBody(w) {
   if (w.type === "chart") {
     return `<div class="centered"><div class="chart">${escapeHtml(w.data.hint || "Chart")}</div></div>`;
   }
-  if (w.type === "list") {
-    return `
-      <div class="list">
-        ${w.data.items
-          .map(
-            (item) => `
-          <div class="list-item">
-            <div>${escapeHtml(item.title)}</div>
-            <div class="list-item__meta">${escapeHtml(item.meta)}</div>
-          </div>
-        `
-          )
-          .join("")}
-      </div>
-    `;
-  }
   if (w.type === "timeline") {
     return `
       <div class="list">
@@ -735,7 +993,6 @@ function renderWidgetBody(w) {
     `;
   }
   if (w.type === "note") {
-    if (w.span?.h === 1) return `<div class="centered"><div class="banner">${escapeHtml(w.data.text)}</div></div>`;
     return `<div class="note">${escapeHtml(w.data.text)}</div>`;
   }
   if (w.type === "quicknote") {
@@ -794,11 +1051,14 @@ function renderWidgetBody(w) {
     </div>`;
   }
   if (w.type === "button") {
+    const imageHtml = w.data?.imageUrl
+      ? `<img class="button-widget__image" src="${escapeAttr(w.data.imageUrl)}" alt="" />`
+      : `<div class="button-widget__label">${escapeHtml(w.data.label || "Open")}</div>`;
     return `
       <div class="centered">
-        <div class="button-widget">
-          <div class="button-widget__btn" data-action="open-button" data-widget-id="${escapeAttr(w.id)}">
-            <div>${escapeHtml(w.data.label || "Open")}</div>
+        <div class="button-widget" data-action="open-button" data-widget-id="${escapeAttr(w.id)}">
+          <div class="button-widget__btn">
+            ${imageHtml}
           </div>
         </div>
       </div>
@@ -916,20 +1176,17 @@ function templateTileHtml(tpl, selected) {
 function templatePreviewBlocks(id) {
   if (id === "tpl-home") {
     return [
-      { col: 1, row: 1, w: 1, h: 1 },
-      { col: 2, row: 1, w: 1, h: 1 },
-      { col: 3, row: 1, w: 1, h: 1 },
-      { col: 4, row: 1, w: 1, h: 1 },
-      { col: 5, row: 1, w: 4, h: 4, accent: true },
-      { col: 1, row: 5, w: 2, h: 4 },
-      { col: 3, row: 5, w: 2, h: 4 },
-      { col: 5, row: 5, w: 2, h: 2 },
-      { col: 5, row: 7, w: 2, h: 2 },
-      { col: 7, row: 5, w: 2, h: 2 },
-      { col: 7, row: 7, w: 2, h: 2 },
-      { col: 1, row: 2, w: 2, h: 2 },
+      { col: 1, row: 1, w: 4, h: 1 },
+      { col: 1, row: 2, w: 1, h: 1 },
+      { col: 1, row: 3, w: 1, h: 1 },
+      { col: 1, row: 4, w: 2, h: 2 },
+      { col: 1, row: 6, w: 2, h: 2 },
+      { col: 2, row: 2, w: 1, h: 1 },
+      { col: 2, row: 3, w: 1, h: 1 },
       { col: 3, row: 2, w: 2, h: 2 },
-      { col: 1, row: 4, w: 4, h: 1 },
+      { col: 3, row: 4, w: 2, h: 4 },
+      { col: 5, row: 1, w: 4, h: 7, accent: true },
+ 
     ];
   }
   if (id === "tpl-bmbt") {
@@ -938,18 +1195,19 @@ function templatePreviewBlocks(id) {
       { col: 2, row: 1, w: 1, h: 1 },
       { col: 3, row: 1, w: 1, h: 1 },
       { col: 4, row: 1, w: 1, h: 1 },
+      { col: 1, row: 2, w: 4, h: 1 },
+      { col: 1, row: 3, w: 2, h: 2 },
+      { col: 3, row: 3, w: 2, h: 2 },
+      { col: 1, row: 5, w: 2, h: 4 },
+      { col: 3, row: 5, w: 2, h: 4 },
+
       { col: 5, row: 1, w: 1, h: 1 },
       { col: 6, row: 1, w: 1, h: 1 },
       { col: 7, row: 1, w: 1, h: 1 },
       { col: 8, row: 1, w: 1, h: 1 },
-      { col: 1, row: 2, w: 4, h: 1 },
       { col: 5, row: 2, w: 4, h: 1 },
-      { col: 1, row: 3, w: 2, h: 2 },
-      { col: 3, row: 3, w: 2, h: 2 },
       { col: 5, row: 3, w: 2, h: 2 },
       { col: 7, row: 3, w: 2, h: 2 },
-      { col: 1, row: 5, w: 2, h: 4 },
-      { col: 3, row: 5, w: 2, h: 4 },
       { col: 5, row: 5, w: 2, h: 4 },
       { col: 7, row: 5, w: 2, h: 4 },
     ];
@@ -989,139 +1247,336 @@ function openWidgetEditor(widgetId) {
     </select>
   `;
   body.appendChild(typeRow);
-  const typeSelect = typeRow.querySelector("#widgetTypeSelect");
-  typeSelect.addEventListener("change", () => {
-    const nextType = typeSelect.value;
-    widget.type = nextType;
-    widget.title = WIDGET_CATALOG[nextType]?.label || "Widget";
-    widget.data = seedData(nextType);
-    closeModal();
-    renderWidgets();
-  });
+  const formFields = document.createElement("div");
+  formFields.id = "widgetFormFields";
+  body.appendChild(formFields);
 
-  if (widget.type === "note" || widget.type === "quicknote") {
-    const row = document.createElement("div");
-    row.innerHTML = `
-      <div class="label">Note text</div>
-      <textarea id="noteText"></textarea>
-    `;
-    body.appendChild(row);
-    body.querySelector("#noteText").value = widget.data.text;
-    const save = button("Save", "btn btn--primary", () => {
-      widget.data.text = body.querySelector("#noteText").value.trim();
-      closeModal();
-      renderWidgets();
-    });
-    const cancel = button("Cancel", "btn", closeModal);
-    openModal(`Edit: ${widget.title}`, body, [cancel, save]);
-    return;
-  }
-
-  if (widget.type === "button") {
-    const row = document.createElement("div");
-    const pageOptions = [...state.pages]
-      .sort((a, b) => {
-        if (a.id === "overview") return -1;
-        if (b.id === "overview") return 1;
-        return a.name.localeCompare(b.name);
-      })
-      .map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.name)}</option>`)
-      .join("");
-    row.innerHTML = `
-      <div>
-        <div class="label">Button label</div>
-        <input type="text" id="btnLabel" />
-      </div>
-      <div>
-        <div class="label">Action type</div>
-        <select id="btnMode">
-          <option value="page">Page</option>
-          <option value="url">External URL</option>
+  const renderFormFields = () => {
+    // Clear all existing form fields completely
+    while (formFields.firstChild) {
+      formFields.removeChild(formFields.firstChild);
+    }
+    formFields.innerHTML = "";
+    
+    if (widget.type === "banner") {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div class="label">Banner template</div>
+        <select id="bannerTemplate">
+          <option value="notify">Notify</option>
+          <option value="events">Events</option>
         </select>
-      </div>
-      <div id="btnPageRow">
-        <div class="label">Page</div>
-        <select id="btnPage">
-          ${pageOptions}
-        </select>
-      </div>
-      <div id="btnUrlRow">
-        <div class="label">URL</div>
-        <input type="text" id="btnUrl" placeholder="https://example.com" />
-      </div>
-    `;
-    body.appendChild(row);
-    body.querySelector("#btnLabel").value = widget.data.label || "Open";
-    body.querySelector("#btnMode").value = widget.data.mode || "page";
-    body.querySelector("#btnUrl").value = widget.data.url || "";
-    body.querySelector("#btnPage").value = widget.data.pageId || state.pages[0]?.id || "overview";
-    const sync = () => {
-      const mode = body.querySelector("#btnMode").value;
-      body.querySelector("#btnPageRow").style.display = mode === "page" ? "" : "none";
-      body.querySelector("#btnUrlRow").style.display = mode === "url" ? "" : "none";
-    };
-    body.querySelector("#btnMode").addEventListener("change", sync);
-    sync();
-    const save = button("Save", "btn btn--primary", () => {
-      widget.data.label = body.querySelector("#btnLabel").value.trim() || "Open";
-      widget.data.mode = body.querySelector("#btnMode").value;
-      widget.data.url = body.querySelector("#btnUrl").value.trim();
-      widget.data.pageId = body.querySelector("#btnPage").value;
-      closeModal();
-      renderWidgets();
-    });
-    const cancel = button("Cancel", "btn", closeModal);
-    openModal(`Edit: ${widget.title}`, body, [cancel, save]);
-    return;
-  }
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#bannerTemplate").value = widget.data.template || "notify";
+      return;
+    }
+    if (widget.type === "message") {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div>
+          <div class="label">Header</div>
+          <input type="text" id="msgHeader" />
+        </div>
+        <div>
+          <div class="label">Text body</div>
+          <textarea id="msgText" rows="4"></textarea>
+        </div>
+        <div>
+          <div class="label">Image URL (optional)</div>
+          <input type="text" id="msgImage" placeholder="https://example.com/image.jpg" />
+        </div>
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#msgHeader").value = widget.data.header || "";
+      formFields.querySelector("#msgText").value = widget.data.text || "";
+      formFields.querySelector("#msgImage").value = widget.data.imageUrl || "";
+      return;
+    }
+    if (widget.type === "poll") {
+      // Determine widget size to limit options
+      const bucket = sizeBucket(widget);
+      const maxOptions = bucket === "tall" ? 6 : 3;
+      
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div>
+          <div class="label">Question</div>
+          <input type="text" id="pollQuestion" />
+        </div>
+        <div>
+          <div class="label">Options</div>
+          <div id="pollOptionsContainer" style="display: grid; gap: 8px;"></div>
+        </div>
+      `;
+      formFields.appendChild(row);
+      
+      const questionInput = formFields.querySelector("#pollQuestion");
+      questionInput.value = widget.data.question || "";
+      
+      const optionsContainer = formFields.querySelector("#pollOptionsContainer");
+      const existingOptions = widget.data.options || [];
+      
+      // Create individual input fields for each option
+      for (let i = 0; i < maxOptions; i++) {
+        const optionDiv = document.createElement("div");
+        optionDiv.innerHTML = `
+          <input type="text" id="pollOption${i}" placeholder="Option ${i + 1}" />
+        `;
+        optionsContainer.appendChild(optionDiv);
+        
+        const input = optionDiv.querySelector(`#pollOption${i}`);
+        if (existingOptions[i]) {
+          input.value = existingOptions[i].text || "";
+        }
+      }
+      
+      return;
+    }
+    if (widget.type === "yoursay") {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div>
+          <div class="label">Question</div>
+          <input type="text" id="yoursayQuestion" />
+        </div>
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#yoursayQuestion").value = widget.data.question || "";
+      return;
+    }
+    if (widget.type === "note" || widget.type === "quicknote") {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div class="label">Note text</div>
+        <textarea id="noteText"></textarea>
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#noteText").value = widget.data.text || "";
+      return;
+    }
+    if (widget.type === "button") {
+      const pageOptions = [...state.pages]
+        .sort((a, b) => {
+          if (a.id === "overview") return -1;
+          if (b.id === "overview") return 1;
+          return a.name.localeCompare(b.name);
+        })
+        .map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.name)}</option>`)
+        .join("");
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div>
+          <div class="label">Button label</div>
+          <input type="text" id="btnLabel" />
+        </div>
+        <div>
+          <div class="label">Button image URL (optional)</div>
+          <input type="text" id="btnImage" placeholder="https://example.com/logo.png" />
+        </div>
+        <div>
+          <div class="label">Action type</div>
+          <select id="btnMode">
+            <option value="page">Page</option>
+            <option value="url">External URL</option>
+          </select>
+        </div>
+        <div id="btnPageRow">
+          <div class="label">Page</div>
+          <select id="btnPage">
+            ${pageOptions}
+          </select>
+        </div>
+        <div id="btnUrlRow">
+          <div class="label">URL</div>
+          <input type="text" id="btnUrl" placeholder="https://example.com" />
+        </div>
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#btnLabel").value = widget.data.label || "Open";
+      formFields.querySelector("#btnImage").value = widget.data.imageUrl || "";
+      formFields.querySelector("#btnMode").value = widget.data.mode || "page";
+      formFields.querySelector("#btnUrl").value = widget.data.url || "";
+      formFields.querySelector("#btnPage").value = widget.data.pageId || state.pages[0]?.id || "overview";
+      const sync = () => {
+        const mode = formFields.querySelector("#btnMode").value;
+        formFields.querySelector("#btnPageRow").style.display = mode === "page" ? "" : "none";
+        formFields.querySelector("#btnUrlRow").style.display = mode === "url" ? "" : "none";
+      };
+      formFields.querySelector("#btnMode").addEventListener("change", sync);
+      sync();
+      return;
+    }
+    if (widget.type === "todo") {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div class="label">Todo items (one per line)</div>
+        <textarea id="todoLines"></textarea>
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#todoLines").value = (widget.data.items || []).map((i) => i.text).join("\n");
+      return;
+    }
+    if (widget.type === "map") {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div class="label">Map label</div>
+        <input type="text" id="mapTitle" />
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#mapTitle").value = widget.data.title || "Vehicle tracker";
+      return;
+    }
+    if (widget.type === "pdf") {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div>
+          <div class="label">PDF template</div>
+          <select id="pdfTemplate">
+            <option value="cms-news">CMS News</option>
+            <option value="pdf-upload">PDF upload</option>
+          </select>
+        </div>
+        <div id="pdfUploadRow" style="display: none;">
+          <div class="label">Upload PDF</div>
+          <input type="file" id="pdfFile" accept="application/pdf" />
+          <span id="pdfFileLabel" class="pdf-upload__hint"></span>
+        </div>
+      `;
+      formFields.appendChild(row);
+      formFields.querySelector("#pdfTemplate").value = widget.data.template || "cms-news";
 
-  if (widget.type === "todo") {
-    const row = document.createElement("div");
-    row.innerHTML = `
-      <div class="label">Todo items (one per line)</div>
-      <textarea id="todoLines"></textarea>
-    `;
-    body.appendChild(row);
-    body.querySelector("#todoLines").value = (widget.data.items || []).map((i) => i.text).join("\n");
-    const save = button("Save", "btn btn--primary", () => {
-      const lines = body
-        .querySelector("#todoLines")
-        .value.split("\n")
+      const pdfTemplate = formFields.querySelector("#pdfTemplate");
+      const pdfUploadRow = formFields.querySelector("#pdfUploadRow");
+      const pdfFile = formFields.querySelector("#pdfFile");
+      const pdfFileLabel = formFields.querySelector("#pdfFileLabel");
+
+      const syncPdfUpload = () => {
+        const isUpload = pdfTemplate.value === "pdf-upload";
+        pdfUploadRow.style.display = isUpload ? "block" : "none";
+        if (isUpload && widget.data?.uploadedSrc) pdfFileLabel.textContent = "PDF loaded";
+        else if (!isUpload) pdfFileLabel.textContent = "";
+        else pdfFileLabel.textContent = "No file chosen";
+      };
+      syncPdfUpload();
+      pdfTemplate.addEventListener("change", () => {
+        widget.data.template = pdfTemplate.value;
+        syncPdfUpload();
+      });
+
+      pdfFile.addEventListener("change", () => {
+        const file = pdfFile.files?.[0];
+        if (file && file.type === "application/pdf") {
+          const r = new FileReader();
+          r.onload = () => {
+            widget.data.uploadedSrc = r.result;
+            pdfFileLabel.textContent = file.name || "PDF loaded";
+          };
+          r.readAsDataURL(file);
+        } else {
+          widget.data.uploadedSrc = "";
+          pdfFileLabel.textContent = "No file chosen";
+        }
+      });
+      if (widget.data?.uploadedSrc) pdfFileLabel.textContent = "PDF loaded";
+      return;
+    }
+  };
+
+  const saveForm = () => {
+    if (widget.type === "banner") {
+      widget.data.template = formFields.querySelector("#bannerTemplate")?.value || "notify";
+    } else if (widget.type === "message") {
+      widget.data.header = formFields.querySelector("#msgHeader")?.value.trim() || "";
+      widget.data.text = formFields.querySelector("#msgText")?.value.trim() || "";
+      widget.data.imageUrl = formFields.querySelector("#msgImage")?.value.trim() || "";
+    } else if (widget.type === "poll") {
+      const question = formFields.querySelector("#pollQuestion")?.value.trim() || "";
+      widget.data.question = question || "Poll question";
+      
+      // Determine widget size to get max options
+      const bucket = sizeBucket(widget);
+      const maxOptions = bucket === "tall" ? 6 : 3;
+      
+      // Read options from individual input fields
+      const options = [];
+      for (let i = 0; i < maxOptions; i++) {
+        const input = formFields.querySelector(`#pollOption${i}`);
+        const text = input?.value.trim() || "";
+        if (text) {
+          options.push(text);
+        }
+      }
+      
+      // Preserve existing votes
+      const existingVotes = {};
+      (widget.data.options || []).forEach((opt) => {
+        existingVotes[opt.text] = opt.votes || 0;
+      });
+      
+      widget.data.options = options.map((text) => ({
+        id: rid("opt"),
+        text,
+        votes: existingVotes[text] || 0,
+      }));
+    } else if (widget.type === "yoursay") {
+      widget.data.question = formFields.querySelector("#yoursayQuestion")?.value.trim() || "What are your thoughts?";
+    } else if (widget.type === "note" || widget.type === "quicknote") {
+      widget.data.text = formFields.querySelector("#noteText")?.value.trim() || "";
+    } else if (widget.type === "button") {
+      widget.data.label = formFields.querySelector("#btnLabel")?.value.trim() || "Open";
+      widget.data.imageUrl = formFields.querySelector("#btnImage")?.value.trim() || "";
+      widget.data.mode = formFields.querySelector("#btnMode")?.value || "page";
+      widget.data.url = formFields.querySelector("#btnUrl")?.value.trim() || "";
+      widget.data.pageId = formFields.querySelector("#btnPage")?.value || state.pages[0]?.id || "overview";
+    } else if (widget.type === "todo") {
+      const lines = (formFields.querySelector("#todoLines")?.value || "")
+        .split("\n")
         .map((s) => s.trim())
         .filter(Boolean);
       widget.data.items = lines.map((text) => ({ id: rid("t"), text, done: false }));
-      closeModal();
-      renderWidgets();
-    });
-    const cancel = button("Cancel", "btn", closeModal);
-    openModal(`Edit: ${widget.title}`, body, [cancel, save]);
-    return;
-  }
+    } else if (widget.type === "map") {
+      widget.data.title = formFields.querySelector("#mapTitle")?.value.trim() || "Vehicle tracker";
+    } else if (widget.type === "pdf") {
+      widget.data.template = formFields.querySelector("#pdfTemplate")?.value || "cms-news";
+      // uploadedSrc is already set by the file input's change handler
+    }
+    closeModal();
+    renderWidgets();
+  };
 
-  if (widget.type === "map") {
-    const row = document.createElement("div");
-    row.innerHTML = `
-      <div class="label">Map label</div>
-      <input type="text" id="mapTitle" />
+  const typeSelect = typeRow.querySelector("#widgetTypeSelect");
+  if (widget.type === "banner") {
+    typeSelect.innerHTML = `
+      <option value="notify">Notify</option>
+      <option value="events">Events</option>
     `;
-    body.appendChild(row);
-    body.querySelector("#mapTitle").value = widget.data.title || "Vehicle tracker";
-    const save = button("Save", "btn btn--primary", () => {
-      widget.data.title = body.querySelector("#mapTitle").value.trim() || "Vehicle tracker";
-      closeModal();
-      renderWidgets();
+    typeSelect.value = widget.data.template || "notify";
+    typeSelect.addEventListener("change", () => {
+      widget.data.template = typeSelect.value;
+      renderFormFields();
     });
-    const cancel = button("Cancel", "btn", closeModal);
-    openModal(`Edit: ${widget.title}`, body, [cancel, save]);
-    return;
+  } else {
+    typeSelect.addEventListener("change", () => {
+      const nextType = typeSelect.value;
+      // Update widget type immediately
+      widget.type = nextType;
+      widget.title = WIDGET_CATALOG[nextType]?.label || "Widget";
+      // Reset data when switching types to ensure clean state
+      widget.data = seedData(nextType);
+      renderFormFields();
+      // Use setTimeout to ensure widget state is fully updated before re-rendering
+      setTimeout(() => {
+        // Completely re-render all widgets to ensure clean replacement
+        renderWidgets();
+      }, 0);
+    });
   }
 
-  const note = document.createElement("div");
-  note.className = "note";
-  note.textContent = "Editing for this widget type is coming next. We will wire up custom fields later.";
-  body.appendChild(note);
-  const close = button("Close", "btn btn--primary", closeModal);
-  openModal(`Edit: ${widget.title}`, body, [close]);
+  renderFormFields();
+  const save = button("Save", "btn btn--primary", saveForm);
+  const cancel = button("Cancel", "btn", closeModal);
+  openModal(`Edit: ${widget.title}`, body, [cancel, save]);
 }
 
 function openModal(title, bodyEl, footerButtons = []) {
@@ -1169,11 +1624,11 @@ function sizeBucket(w) {
 function buildWidgetOptions(w) {
   const bucket = sizeBucket(w);
   const allowed = {
-    tiny: ["button", "quicknote", "hide"],
+    tiny: ["button", "quicknote", "banner", "hide"],
     small: ["button", "quicknote", "todo", "hide"],
-    medium: ["stats", "list", "timeline", "note", "calculator", "todo", "button", "hide"],
-    large: ["map", "chart", "list", "stats", "todo", "note", "notify", "hide"],
-    tall: ["profile", "list", "todo", "note", "map", "hide"],
+    medium: ["poll", "message", "yoursay", "hide"],
+    large: ["pdf", "hide"],
+    tall: ["poll", "message", "yoursay", "hide"],
   }[bucket];
 
   const types = allowed.includes(w.type) ? allowed : [w.type, ...allowed];
@@ -1193,9 +1648,9 @@ function seedData(type) {
 function widgetTitle(w) {
   const typeLabel = (() => {
     if (w.type === "button") return "Button";
+    if (w.type === "banner") return "Banner";
     if (w.type === "profile") return "Profile";
     if (w.type === "add") return "Add";
-    if (w.type === "note" && (w.span?.h === 1 || w.h === 1)) return "Banner";
     if (w.type === "note" || w.type === "quicknote") return "Note";
     if (w.type === "calculator") return "Calculator";
     if (w.type === "todo") return "Todo";
