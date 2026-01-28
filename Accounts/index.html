@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounting | Financial Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        // CRITICAL: Define switchView IMMEDIATELY before page loads
+        // This MUST be defined before any other scripts run
+        console.log('=== DEFINING switchView ===');
+        
+        window.switchView = function(viewName) {
+            console.log('=== SWITCHVIEW CALLED ===', viewName);
+            console.log('Current window.switchView type:', typeof window.switchView);
+            
+            if (!viewName) {
+                console.error('switchView called without viewName');
+                alert('Error: No view name provided');
+                return false;
+            }
+            
+            // Update icon sidebar active state
+            try {
+                const items = document.querySelectorAll('.icon-nav-item[data-view]');
+                console.log('Found', items.length, 'menu items');
+                items.forEach(item => {
+                    if (item.dataset.view === viewName) {
+                        item.classList.add('active');
+                        console.log('✓ Activated menu item:', viewName);
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            } catch (e) {
+                console.error('Error updating sidebar:', e);
+            }
+            
+            // Hide all views FIRST
+            try {
+                const views = document.querySelectorAll('.view');
+                console.log('Found', views.length, 'views - hiding all');
+                views.forEach(view => {
+                    view.classList.remove('active');
+                    // Force hide with inline style as backup
+                    view.style.display = 'none';
+                });
+            } catch (e) {
+                console.error('Error hiding views:', e);
+            }
+            
+            // Show selected view
+            const viewId = viewName + 'View';
+            const viewElement = document.getElementById(viewId);
+            console.log(`Looking for view: ${viewId}, found:`, viewElement);
+            
+            if (!viewElement) {
+                console.error(`View element not found: ${viewId}`);
+                alert(`Error: Page "${viewName}" not found. Looking for element: ${viewId}`);
+                return false;
+            }
+            
+            // Show the view
+            viewElement.classList.add('active');
+            viewElement.style.display = 'block';
+            console.log(`✓ View ${viewId} is now active and displayed`);
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+            
+            // Render invoices immediately so content shows (no empty area)
+            if (viewName === 'invoices' && typeof window.renderInvoices === 'function') {
+                try { window.renderInvoices(); } catch (e) { console.warn('renderInvoices (sync):', e); }
+            }
+            // Render reconciliation immediately so sample data and layout show
+            if (viewName === 'reconciliation' && typeof window.renderReconciliation === 'function') {
+                try { window.renderReconciliation(); } catch (e) { console.warn('renderReconciliation (sync):', e); }
+            }
+            
+            // Call rendering function after a short delay to ensure app.js is loaded
+            setTimeout(function() {
+                try {
+                    console.log('Attempting to render view:', viewName);
+                    let rendered = false;
+                    
+                    switch(viewName) {
+                        case 'summary': 
+                            if (typeof renderSummary === 'function') {
+                                renderSummary();
+                                rendered = true;
+                                console.log('✓ renderSummary called');
+                            } else {
+                                console.warn('renderSummary not available yet');
+                            }
+                            break;
+                        case 'reconciliation': 
+                            if (typeof window.renderReconciliation === 'function') {
+                                try {
+                                    window.renderReconciliation();
+                                    rendered = true;
+                                    console.log('✓ renderReconciliation called');
+                                } catch (e) { console.error(e); }
+                            } else {
+                                console.warn('renderReconciliation not available yet');
+                            }
+                            break;
+                        case 'invoices': 
+                            if (typeof renderInvoices === 'function') {
+                                renderInvoices();
+                                rendered = true;
+                                console.log('✓ renderInvoices called');
+                            } else {
+                                console.warn('renderInvoices not available');
+                            }
+                            break;
+                        case 'expenses': 
+                            if (typeof renderExpenses === 'function') {
+                                renderExpenses();
+                                rendered = true;
+                                console.log('✓ renderExpenses called');
+                            } else {
+                                console.warn('renderExpenses not available');
+                            }
+                            break;
+                        case 'subscriptions': 
+                            if (typeof renderSubscriptions === 'function') {
+                                renderSubscriptions();
+                                rendered = true;
+                                console.log('✓ renderSubscriptions called');
+                            } else {
+                                console.warn('renderSubscriptions not available');
+                            }
+                            break;
+                        case 'credits': 
+                            if (typeof renderCredits === 'function') {
+                                renderCredits();
+                                rendered = true;
+                                console.log('✓ renderCredits called');
+                            } else {
+                                console.warn('renderCredits not available');
+                            }
+                            break;
+                        case 'rebates': 
+                            if (typeof renderRebates === 'function') {
+                                renderRebates();
+                                rendered = true;
+                                console.log('✓ renderRebates called');
+                            } else {
+                                console.warn('renderRebates not available');
+                            }
+                            break;
+                        case 'cash': 
+                            if (typeof renderCash === 'function') {
+                                renderCash();
+                                rendered = true;
+                                console.log('✓ renderCash called');
+                            } else {
+                                console.warn('renderCash not available');
+                            }
+                            break;
+                        case 'costing': 
+                            if (typeof renderCosting === 'function') {
+                                renderCosting();
+                                rendered = true;
+                                console.log('✓ renderCosting called');
+                            } else {
+                                console.warn('renderCosting not available');
+                            }
+                            break;
+                        case 'reports': 
+                            if (typeof renderReports === 'function') {
+                                renderReports();
+                                rendered = true;
+                                console.log('✓ renderReports called');
+                            } else {
+                                console.warn('renderReports not available');
+                            }
+                            break;
+                        case 'settings': 
+                            if (typeof renderSettings === 'function') {
+                                renderSettings();
+                                rendered = true;
+                                console.log('✓ renderSettings called');
+                            } else {
+                                console.warn('renderSettings not available');
+                            }
+                            break;
+                        default:
+                            console.warn('Unknown view:', viewName);
+                    }
+                    
+                    if (!rendered) {
+                        console.warn(`Render function for ${viewName} not called - view may be empty`);
+                    }
+                    
+                    // Update page actions
+                    if (typeof updatePageActions === 'function') {
+                        try {
+                            updatePageActions();
+                        } catch (e) {
+                            console.error('Error updating page actions:', e);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error rendering view:', viewName, error);
+                    console.error('Error stack:', error.stack);
+                }
+            }, 100);
+            
+            return true;
+        };
+        
+        console.log('switchView defined inline');
+        console.log('switchView type:', typeof window.switchView);
+        
+        // Test that it works immediately
+        if (typeof window.switchView === 'function') {
+            console.log('✓ switchView is ready');
+        } else {
+            console.error('✗ switchView failed to initialize');
+            alert('CRITICAL ERROR: switchView failed to initialize!');
+        }
+        
+        // Make it available globally
+        if (typeof switchView === 'undefined') {
+            window.switchView = window.switchView;
+        }
+    </script>
+</head>
+<body style="background: transparent !important;">
+    <div class="app-container">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div class="header-left">
+                <div class="app-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                </div>
+                <h1 class="app-title">Accounting</h1>
+            </div>
+            <div class="header-center">
+                <div class="search-bar">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" placeholder="Search..." class="search-input">
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="header-icon-btn" title="Notifications">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                </button>
+                <button class="header-icon-btn" title="Apps">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                </button>
+                <button class="header-icon-btn" title="Profile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Vertical Icon Sidebar -->
+        <aside class="icon-sidebar">
+            <nav class="icon-sidebar-nav">
+                <a href="#" class="icon-nav-item active" title="Summary" data-view="summary" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('summary');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Reconciliation" data-view="reconciliation" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('reconciliation');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Invoices" data-view="invoices" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('invoices');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Expenses" data-view="expenses" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('expenses');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 9V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+                        <path d="M13 21h6a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-6z"/>
+                        <path d="M7 21v-8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v8"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Subscriptions" data-view="subscriptions" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('subscriptions');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 9h16"/>
+                        <path d="M4 15h16"/>
+                        <path d="M4 12h16"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Credits" data-view="credits" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('credits');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Rebates" data-view="rebates" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('rebates');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Cash" data-view="cash" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('cash');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                        <path d="M12 1v22"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Costing" data-view="costing" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('costing');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        <path d="M3 3h18v18H3z"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Reports" data-view="reports" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('reports');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                </a>
+                <a href="#" class="icon-nav-item" title="Settings" data-view="settings" onclick="event.preventDefault(); event.stopPropagation(); return window.switchView('settings');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </a>
+            </nav>
+            
+            <div class="icon-sidebar-footer">
+                <a href="#" class="icon-nav-item" title="Home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Page Actions Bar -->
+            <div class="page-actions-bar">
+                <div class="page-actions" id="submenuActions">
+                    <!-- Dynamic content based on current page -->
+                </div>
+            </div>
+
+            <!-- Summary View -->
+            <section class="view active" id="summaryView">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon total">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="totalRevenue">£124,580</span>
+                            <span class="stat-label">Total Revenue</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="pendingInvoices">24</span>
+                            <span class="stat-label">Pending Invoices</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon in-progress">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 9V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="totalExpenses">£18,450</span>
+                            <span class="stat-label">Total Expenses</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon completed">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="reconciledItems">156</span>
+                            <span class="stat-label">Reconciled Items</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Content -->
+                <div class="dashboard-grid">
+                    <!-- Financial Overview Panel -->
+                    <div class="panel financial-panel">
+                        <div class="panel-header">
+                            <h2>Financial Overview</h2>
+                        </div>
+                        <div class="financial-summary" id="financialSummary">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Panel -->
+                    <div class="panel activity-panel">
+                        <div class="panel-header">
+                            <h2>Recent Activity</h2>
+                        </div>
+                        <div class="activity-list" id="activityList">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reconciliation View (static fallback so content always shows; JS replaces when ready) -->
+            <section class="view" id="reconciliationView">
+                <div class="reconciliation-container">
+                    <div id="reconciliationSummary" class="reconciliation-summary-dashboard">
+                        <div class="reconciliation-summary-header">
+                            <div class="page-title-group">
+                                <h2>Bank Reconciliation</h2>
+                                <p>Match bank transactions with invoices, expenses, and other items for reporting and tax</p>
+                            </div>
+                            <div class="reconciliation-header-actions">
+                                <button type="button" class="btn-secondary" onclick="window.autoMatchTransactions && window.autoMatchTransactions()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                                    Auto-Match
+                                </button>
+                                <button type="button" class="btn-secondary" onclick="window.exportReconciliationReport && window.exportReconciliationReport()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Export Report
+                                </button>
+                                <label for="bankStatementUpload" class="btn-primary">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    Upload Bank Statement
+                                </label>
+                                <input type="file" id="bankStatementUpload" style="display: none;" accept=".csv,.ofx,.qif">
+                            </div>
+                        </div>
+                        <div class="reconciliation-stats-grid">
+                            <div class="reconciliation-stat-card">
+                                <div class="stat-card-header">
+                                    <span class="stat-card-label">Reconciliation Status</span>
+                                    <span class="stat-card-percentage success">72%</span>
+                                </div>
+                                <div class="stat-card-value">8 / 11 matched</div>
+                                <div class="stat-card-progress"><div class="stat-card-progress-bar" style="width: 72%"></div></div>
+                            </div>
+                            <div class="reconciliation-stat-card">
+                                <div class="stat-card-header">
+                                    <span class="stat-card-label">Unmatched Bank Transactions</span>
+                                    <span class="stat-card-badge warning">3</span>
+                                </div>
+                                <div class="stat-card-value">£14,320.00</div>
+                            </div>
+                            <div class="reconciliation-stat-card">
+                                <div class="stat-card-header">
+                                    <span class="stat-card-label">Unmatched Items</span>
+                                    <span class="stat-card-badge warning">10</span>
+                                </div>
+                                <div class="stat-card-value">£78,450.00</div>
+                            </div>
+                            <div class="reconciliation-stat-card">
+                                <div class="stat-card-header">
+                                    <span class="stat-card-label">Variance</span>
+                                    <span class="stat-card-badge warning">£120.00</span>
+                                </div>
+                                <div class="stat-card-value">Difference between bank &amp; items</div>
+                            </div>
+                        </div>
+                        <div class="reconciliation-quick-filters">
+                            <button type="button" class="filter-btn active" data-filter="all" onclick="window.setReconciliationFilter && window.setReconciliationFilter('all')">All</button>
+                            <button type="button" class="filter-btn" data-filter="unmatched" onclick="window.setReconciliationFilter && window.setReconciliationFilter('unmatched')">Unmatched Only</button>
+                            <button type="button" class="filter-btn" data-filter="matched" onclick="window.setReconciliationFilter && window.setReconciliationFilter('matched')">Matched Only</button>
+                            <button type="button" class="filter-btn" data-filter="variance" onclick="window.setReconciliationFilter && window.setReconciliationFilter('variance')">Variances</button>
+                            <div class="reconciliation-advanced-filters">
+                                <input type="date" id="reconciliationDateFrom" placeholder="From Date" title="From Date">
+                                <input type="date" id="reconciliationDateTo" placeholder="To Date" title="To Date">
+                                <input type="number" id="reconciliationAmountMin" placeholder="Min Amount" step="0.01" title="Minimum Amount">
+                                <input type="number" id="reconciliationAmountMax" placeholder="Max Amount" step="0.01" title="Maximum Amount">
+                                <input type="text" id="reconciliationSearch" placeholder="Search..." title="Search">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="reconciliation-two-column">
+                        <div class="reconciliation-column reconciliation-bank-column">
+                            <div class="reconciliation-column-header">
+                                <h3>Bank Transactions</h3>
+                                <div class="reconciliation-filter">
+                                    <select id="bankTransactionFilter" onchange="window.filterBankTransactions && window.filterBankTransactions()">
+                                        <option value="all">All Transactions</option>
+                                        <option value="paired">Paired Only</option>
+                                        <option value="unpaired">Unpaired Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="reconciliation-transactions-list" id="bankTransactionsList">
+                                <div class="reconciliation-transaction-item paired" data-transaction-id="TXN-001" data-amount="12450">
+                                    <div class="transaction-main">
+                                        <div class="transaction-date">16 Jan 2024</div>
+                                        <div class="transaction-description" title="PAYMENT - SteelFab Solutions">PAYMENT - SteelFab Solutions</div>
+                                        <div class="transaction-reference" title="Ref: INV-2024-001">Ref: INV-2024-001</div>
+                                    </div>
+                                    <div class="transaction-details">
+                                        <div class="transaction-amount debit">-£12,450.00</div>
+                                        <div class="transaction-paired-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Paired</div>
+                                        <button type="button" class="btn-secondary btn-sm">Unpair</button>
+                                    </div>
+                                </div>
+                                <div class="reconciliation-transaction-item" data-transaction-id="TXN-002" data-amount="8750">
+                                    <div class="transaction-main">
+                                        <div class="transaction-date">22 Jan 2024</div>
+                                        <div class="transaction-description" title="PAYMENT - BuildMate Supplies">PAYMENT - BuildMate Supplies</div>
+                                        <div class="transaction-reference" title="Ref: INV-2024-002">Ref: INV-2024-002</div>
+                                    </div>
+                                    <div class="transaction-details">
+                                        <div class="transaction-amount debit">-£8,750.00</div>
+                                        <button type="button" class="btn-primary btn-sm">Pair</button>
+                                    </div>
+                                </div>
+                                <div class="reconciliation-transaction-item paired" data-transaction-id="TXN-004" data-amount="4300">
+                                    <div class="transaction-main">
+                                        <div class="transaction-date">29 Jan 2024</div>
+                                        <div class="transaction-description" title="PAYMENT - BuildMate Supplies">PAYMENT - BuildMate Supplies</div>
+                                        <div class="transaction-reference" title="Ref: INV-2024-010">Ref: INV-2024-010</div>
+                                    </div>
+                                    <div class="transaction-details">
+                                        <div class="transaction-amount debit">-£4,300.00</div>
+                                        <div class="transaction-paired-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Paired</div>
+                                        <button type="button" class="btn-secondary btn-sm">Unpair</button>
+                                    </div>
+                                </div>
+                                <div class="reconciliation-transaction-item" data-transaction-id="TXN-005" data-amount="3420">
+                                    <div class="transaction-main">
+                                        <div class="transaction-date">26 Jan 2024</div>
+                                        <div class="transaction-description" title="PAYMENT - ElectraTech">PAYMENT - ElectraTech</div>
+                                        <div class="transaction-reference" title="Ref: INV-2024-003">Ref: INV-2024-003</div>
+                                    </div>
+                                    <div class="transaction-details">
+                                        <div class="transaction-amount debit">-£3,420.00</div>
+                                        <button type="button" class="btn-primary btn-sm">Pair</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="reconciliation-column reconciliation-items-column">
+                            <div class="reconciliation-column-header">
+                                <h3>Items for Reconciliation</h3>
+                                <div class="reconciliation-header-controls">
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-option"><input type="checkbox" name="reconciliationType" value="invoices" checked onchange="window.updateReconciliationItems && window.updateReconciliationItems()"><span>Invoices</span></label>
+                                        <label class="checkbox-option"><input type="checkbox" name="reconciliationType" value="expenses" checked onchange="window.updateReconciliationItems && window.updateReconciliationItems()"><span>Expenses</span></label>
+                                        <label class="checkbox-option"><input type="checkbox" name="reconciliationType" value="subscriptions" checked onchange="window.updateReconciliationItems && window.updateReconciliationItems()"><span>Subscriptions</span></label>
+                                        <label class="checkbox-option"><input type="checkbox" name="reconciliationType" value="credits" checked onchange="window.updateReconciliationItems && window.updateReconciliationItems()"><span>Credits</span></label>
+                                        <label class="checkbox-option"><input type="checkbox" name="reconciliationType" value="rebates" checked onchange="window.updateReconciliationItems && window.updateReconciliationItems()"><span>Rebates</span></label>
+                                        <label class="checkbox-option"><input type="checkbox" name="reconciliationType" value="cash" checked onchange="window.updateReconciliationItems && window.updateReconciliationItems()"><span>Cash</span></label>
+                                    </div>
+                                    <div class="reconciliation-count" id="reconciliationItemsCount">10 unpaired</div>
+                                </div>
+                            </div>
+                            <div class="reconciliation-items-list" id="reconciliationItemsList">
+                                <div class="reconciliation-invoice-item" data-invoice-id="INV-2024-002">
+                                    <div class="invoice-main">
+                                        <div class="invoice-header">
+                                            <div class="invoice-number">INV-2024-002</div>
+                                            <div class="invoice-date">20 Jan 2024</div>
+                                        </div>
+                                        <div class="invoice-supplier">BuildMate Supplies</div>
+                                        <div class="invoice-project">Metro Shopping Centre</div>
+                                    </div>
+                                    <div class="invoice-details">
+                                        <div class="invoice-amount">£8,750.00</div>
+                                        <div class="invoice-status">pending</div>
+                                        <div class="invoice-actions">
+                                            <button type="button" class="btn-secondary btn-sm">Edit</button>
+                                            <button type="button" class="btn-primary btn-sm">Pair</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="reconciliation-invoice-item" data-invoice-id="INV-2024-003">
+                                    <div class="invoice-main">
+                                        <div class="invoice-header">
+                                            <div class="invoice-number">INV-2024-003</div>
+                                            <div class="invoice-date">25 Jan 2024</div>
+                                        </div>
+                                        <div class="invoice-supplier">ElectraTech</div>
+                                        <div class="invoice-project">Harbour View Apartments</div>
+                                    </div>
+                                    <div class="invoice-details">
+                                        <div class="invoice-amount">£3,420.00</div>
+                                        <div class="invoice-status">pending</div>
+                                        <div class="invoice-actions">
+                                            <button type="button" class="btn-secondary btn-sm">Edit</button>
+                                            <button type="button" class="btn-primary btn-sm">Pair</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="reconciliation-invoice-item" data-invoice-id="INV-2024-005">
+                                    <div class="invoice-main">
+                                        <div class="invoice-header">
+                                            <div class="invoice-number">INV-2024-005</div>
+                                            <div class="invoice-date">01 Feb 2024</div>
+                                        </div>
+                                        <div class="invoice-supplier">RoofTech Systems</div>
+                                        <div class="invoice-project">Metro Shopping Centre</div>
+                                    </div>
+                                    <div class="invoice-details">
+                                        <div class="invoice-amount">£18,900.00</div>
+                                        <div class="invoice-status">pending</div>
+                                        <div class="invoice-actions">
+                                            <button type="button" class="btn-secondary btn-sm">Edit</button>
+                                            <button type="button" class="btn-primary btn-sm">Pair</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Invoices View (static fallback so content always shows; JS replaces when ready) -->
+            <section class="view" id="invoicesView">
+                <div class="invoices-container">
+                    <div class="invoices-page-header" id="invoicesPageHeader">
+                        <div class="page-title-group">
+                            <h2>Invoices</h2>
+                            <p class="invoices-subtitle">View and manage invoices. Rows linked to a procurement order show the PO number.</p>
+                        </div>
+                    </div>
+                    <div class="invoices-stats-bar" id="invoicesStatsBar">
+                        <div class="invoice-stat-card"><span class="invoice-stat-value">12</span><span class="invoice-stat-label">Invoices</span></div>
+                        <div class="invoice-stat-card highlight"><span class="invoice-stat-value">7</span><span class="invoice-stat-label">Linked to PO</span></div>
+                        <div class="invoice-stat-card"><span class="invoice-stat-value">9</span><span class="invoice-stat-label">Pending</span></div>
+                        <div class="invoice-stat-card"><span class="invoice-stat-value">1</span><span class="invoice-stat-label">Overdue</span></div>
+                        <div class="invoice-stat-card total"><span class="invoice-stat-value">£96,090</span><span class="invoice-stat-label">Total</span></div>
+                    </div>
+                    <div class="invoices-filters" id="invoicesFilters">
+                        <div class="invoices-filter-row">
+                            <label class="filter-label">Filters</label>
+                            <select id="invoiceStatusFilter" onchange="window.filterInvoices && window.filterInvoices()">
+                                <option value="all">All status</option>
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="overdue">Overdue</option>
+                            </select>
+                            <select id="invoiceLinkedFilter" onchange="window.filterInvoices && window.filterInvoices()">
+                                <option value="all">Linked to order</option>
+                                <option value="linked">Linked to PO</option>
+                                <option value="notlinked">Not linked</option>
+                            </select>
+                            <select id="invoiceSourceFilter" onchange="window.filterInvoices && window.filterInvoices()">
+                                <option value="all">All source</option>
+                                <option value="email">From email</option>
+                                <option value="upload">Upload</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                            <select id="invoiceSupplierFilter" onchange="window.filterInvoices && window.filterInvoices()">
+                                <option value="all">All suppliers</option>
+                            </select>
+                            <select id="invoiceProjectFilter" onchange="window.filterInvoices && window.filterInvoices()">
+                                <option value="all">All projects</option>
+                                <option value="Riverside Tower">Riverside Tower</option>
+                                <option value="Metro Shopping Centre">Metro Shopping Centre</option>
+                                <option value="Harbour View Apartments">Harbour View Apartments</option>
+                                <option value="City Plaza">City Plaza</option>
+                                <option value="Industrial Complex">Industrial Complex</option>
+                            </select>
+                            <input type="date" id="invoiceDateFrom" onchange="window.filterInvoices && window.filterInvoices()" title="From date" class="filter-date">
+                            <input type="date" id="invoiceDateTo" onchange="window.filterInvoices && window.filterInvoices()" title="To date" class="filter-date">
+                            <input type="text" id="invoiceSearch" placeholder="Search invoice, supplier, PO…" onkeyup="window.filterInvoices && window.filterInvoices()" class="filter-search">
+                        </div>
+                    </div>
+                    <div class="invoices-grid invoices-table-container" id="invoicesGrid">
+                        <table class="invoices-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-check"><input type="checkbox" id="selectAllInvoices" onchange="window.toggleAllInvoices && window.toggleAllInvoices(this.checked)" title="Select all"></th>
+                                    <th>Invoice</th>
+                                    <th>Date</th>
+                                    <th>Due</th>
+                                    <th>Supplier</th>
+                                    <th>Project</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Paired</th>
+                                    <th>Linked PO</th>
+                                    <th>Source</th>
+                                    <th class="col-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="invoice-row linked-to-po" data-invoice-id="INV-2024-001">
+                                    <td><input type="checkbox" class="invoice-checkbox" value="INV-2024-001"></td>
+                                    <td class="invoice-number-cell"><span class="invoice-number">INV-2024-001</span></td>
+                                    <td>15 Jan 2024</td>
+                                    <td>14 Feb 2024</td>
+                                    <td class="invoice-supplier-cell">SteelFab Solutions</td>
+                                    <td>Riverside Tower</td>
+                                    <td class="invoice-amount-cell">£12,450.00</td>
+                                    <td><span class="status-badge paid">paid</span></td>
+                                    <td><span class="paired-badge">Paired</span></td>
+                                    <td><span class="linked-po-badge">CMS00123</span></td>
+                                    <td><span class="source-badge source-email">Email</span></td>
+                                    <td class="invoice-actions-cell"><button class="btn-secondary btn-sm">View</button> <button class="btn-secondary btn-sm">Download</button></td>
+                                </tr>
+                                <tr class="invoice-row" data-invoice-id="INV-2024-002">
+                                    <td><input type="checkbox" class="invoice-checkbox" value="INV-2024-002"></td>
+                                    <td class="invoice-number-cell"><span class="invoice-number">INV-2024-002</span></td>
+                                    <td>20 Jan 2024</td>
+                                    <td>19 Feb 2024</td>
+                                    <td class="invoice-supplier-cell">BuildMate Supplies</td>
+                                    <td>Metro Shopping Centre</td>
+                                    <td class="invoice-amount-cell">£8,750.00</td>
+                                    <td><span class="status-badge pending">pending</span></td>
+                                    <td><span class="unpaired-badge">Unpaired</span></td>
+                                    <td><span class="text-muted">—</span></td>
+                                    <td><span class="source-badge source-upload">Upload</span></td>
+                                    <td class="invoice-actions-cell"><button class="btn-primary btn-sm">Mark Paid</button> <button class="btn-secondary btn-sm">View</button> <button class="btn-secondary btn-sm">Download</button></td>
+                                </tr>
+                                <tr class="invoice-row linked-to-po" data-invoice-id="INV-2024-003">
+                                    <td><input type="checkbox" class="invoice-checkbox" value="INV-2024-003"></td>
+                                    <td class="invoice-number-cell"><span class="invoice-number">INV-2024-003</span></td>
+                                    <td>25 Jan 2024</td>
+                                    <td>24 Feb 2024</td>
+                                    <td class="invoice-supplier-cell">ElectraTech</td>
+                                    <td>Harbour View Apartments</td>
+                                    <td class="invoice-amount-cell">£3,420.00</td>
+                                    <td><span class="status-badge pending">pending</span></td>
+                                    <td><span class="unpaired-badge">Unpaired</span></td>
+                                    <td><span class="linked-po-badge">CMS00456</span></td>
+                                    <td><span class="source-badge source-email">Email</span></td>
+                                    <td class="invoice-actions-cell"><button class="btn-primary btn-sm">Mark Paid</button> <button class="btn-secondary btn-sm">View</button> <button class="btn-secondary btn-sm">Download</button></td>
+                                </tr>
+                                <tr class="invoice-row" data-invoice-id="INV-2024-007">
+                                    <td><input type="checkbox" class="invoice-checkbox" value="INV-2024-007"></td>
+                                    <td class="invoice-number-cell"><span class="invoice-number">INV-2024-007</span></td>
+                                    <td>10 Feb 2024</td>
+                                    <td>11 Mar 2024</td>
+                                    <td class="invoice-supplier-cell">Safety Gear Pro</td>
+                                    <td>City Plaza</td>
+                                    <td class="invoice-amount-cell">£1,890.00</td>
+                                    <td><span class="status-badge overdue">overdue</span></td>
+                                    <td><span class="unpaired-badge">Unpaired</span></td>
+                                    <td><span class="text-muted">—</span></td>
+                                    <td><span class="source-badge source-manual">Manual</span></td>
+                                    <td class="invoice-actions-cell"><button class="btn-primary btn-sm">Mark Paid</button> <button class="btn-secondary btn-sm">View</button> <button class="btn-secondary btn-sm">Download</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expenses View -->
+            <section class="view" id="expensesView">
+                <div class="expenses-container">
+                    <!-- Page Header -->
+                    <div class="expenses-page-header">
+                        <div class="page-title-group">
+                            <h2>Expenses Management</h2>
+                            <p>Collect and approve employee expenses (from web or mobile). View user, date, reason, cost and tax, and receipt. Approve or reject, then post to make them ready for bank reconciliation.</p>
+                        </div>
+                        <div class="expenses-header-actions">
+                            <button class="btn-primary" onclick="openExpenseRequestModal()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px;">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                New Expense Request
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Summary Stats -->
+                    <div class="expenses-stats-bar">
+                        <div class="expense-stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Pending Approval</div>
+                        </div>
+                        <div class="expense-stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Approved</div>
+                        </div>
+                        <div class="expense-stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Ready for Reconciliation</div>
+                        </div>
+                        <div class="expense-stat-card">
+                            <div class="stat-value">£0</div>
+                            <div class="stat-label">Total Amount</div>
+                        </div>
+                    </div>
+
+                    <!-- Filters and View Toggle -->
+                    <div class="expenses-controls-bar">
+                        <div class="expenses-filters">
+                            <select id="expenseStatusFilter" onchange="filterExpenses()">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending Approval</option>
+                                <option value="approved">Approved</option>
+                                <option value="posted">Posted (ready for reconciliation)</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <select id="expenseTypeFilter" onchange="filterExpenses()">
+                                <option value="all">All Types</option>
+                                <option value="company">Company</option>
+                                <option value="employee">Employee</option>
+                                <option value="misc">Miscellaneous</option>
+                            </select>
+                            <select id="expenseGroupBy" onchange="groupExpenses()">
+                                <option value="none">No Grouping</option>
+                                <option value="category">Group by Category</option>
+                                <option value="project">Group by Project</option>
+                                <option value="date">Group by Date</option>
+                                <option value="status">Group by Status</option>
+                            </select>
+                        </div>
+                        <div class="expenses-bulk-actions">
+                            <button class="btn-secondary btn-sm" onclick="selectAllExpenses()">Select All</button>
+                            <button class="btn-primary btn-sm" onclick="bulkApproveExpenses()">Approve Selected</button>
+                        </div>
+                    </div>
+
+                    <!-- Expenses List -->
+                    <div class="expenses-main-content" id="expensesMainContent">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Subscriptions View -->
+            <section class="view" id="subscriptionsView">
+                <div class="subscriptions-container">
+                    <div class="subscriptions-header" id="subscriptionsHeader">
+                        <h2>Subscriptions Manager</h2>
+                        <p class="subscriptions-description">Manage all subscriptions in one place. AI suggests possible subscriptions from invoices and bank statements—add them with one click. Store website URL and login details here; link invoices from email to each subscription and keep everything recorded and reconciled.</p>
+                    </div>
+                    <div class="subscriptions-stats-bar" id="subscriptionsStatsBar">
+                        <!-- Stats populated by JavaScript -->
+                    </div>
+                    <div class="subscriptions-filters" id="subscriptionsFilters">
+                        <!-- Filters populated by JavaScript -->
+                    </div>
+                    <div class="subscriptions-suggestions-section" id="subscriptionsSuggestionsSection">
+                        <!-- AI suggestions block populated by JavaScript -->
+                    </div>
+                    <div class="subscriptions-main-content" id="subscriptionsMainContent">
+                        <!-- Active subscriptions table populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Credits View (credit notes – similar to Invoices, ready for reconciliation) -->
+            <section class="view" id="creditsView">
+                <div class="credits-container">
+                    <div class="credits-page-header" id="creditsPageHeader">
+                        <div class="page-title-group">
+                            <h2>Credit Notes</h2>
+                            <p class="credits-subtitle">Manage all credit notes here. Process credits to make them ready to be reconciled to bank transactions on the Reconciliation page.</p>
+                        </div>
+                    </div>
+                    <div class="credits-stats-bar" id="creditsStatsBar">
+                        <div class="credit-stat-card"><span class="credit-stat-value">0</span><span class="credit-stat-label">Credit notes</span></div>
+                        <div class="credit-stat-card"><span class="credit-stat-value">0</span><span class="credit-stat-label">Pending</span></div>
+                        <div class="credit-stat-card highlight"><span class="credit-stat-value">0</span><span class="credit-stat-label">Ready for reconciliation</span></div>
+                        <div class="credit-stat-card"><span class="credit-stat-value">0</span><span class="credit-stat-label">Reconciled</span></div>
+                        <div class="credit-stat-card total"><span class="credit-stat-value">£0</span><span class="credit-stat-label">Total</span></div>
+                    </div>
+                    <div class="credits-filters" id="creditsFilters">
+                        <div class="credits-filter-row">
+                            <label class="filter-label">Filters</label>
+                            <select id="creditStatusFilter" onchange="window.filterCredits && window.filterCredits()">
+                                <option value="all">All status</option>
+                                <option value="pending">Pending</option>
+                                <option value="processed">Ready for reconciliation</option>
+                                <option value="applied">Reconciled</option>
+                            </select>
+                            <select id="creditSupplierFilter" onchange="window.filterCredits && window.filterCredits()">
+                                <option value="all">All suppliers</option>
+                            </select>
+                            <select id="creditProjectFilter" onchange="window.filterCredits && window.filterCredits()">
+                                <option value="all">All projects</option>
+                            </select>
+                            <select id="creditSourceFilter" onchange="window.filterCredits && window.filterCredits()">
+                                <option value="all">All source</option>
+                                <option value="email">From email</option>
+                                <option value="upload">Upload</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                            <input type="date" id="creditDateFrom" onchange="window.filterCredits && window.filterCredits()" title="From date" class="filter-date">
+                            <input type="date" id="creditDateTo" onchange="window.filterCredits && window.filterCredits()" title="To date" class="filter-date">
+                            <input type="text" id="creditSearch" placeholder="Search credit, supplier…" onkeyup="window.filterCredits && window.filterCredits()" class="filter-search">
+                        </div>
+                    </div>
+                    <div class="credits-grid credits-table-container" id="creditsGrid">
+                        <!-- Credit notes table populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rebates View -->
+            <section class="view" id="rebatesView">
+                <div class="rebates-container">
+                    <div class="rebates-agreements" id="rebatesAgreements">
+                        <!-- Rebate agreements will be populated by JavaScript -->
+                    </div>
+                    <div class="rebates-analysis" id="rebatesAnalysis">
+                        <!-- AI analysis will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cash View -->
+            <section class="view" id="cashView">
+                <div class="cash-container">
+                    <div class="cash-transactions" id="cashTransactions">
+                        <!-- Cash transactions will be populated by JavaScript -->
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                    <line x1="1" y1="10" x2="23" y2="10"/>
+                                    <path d="M12 1v22"/>
+                                </svg>
+                            </div>
+                            <h3 class="empty-state-title">No Cash Transactions</h3>
+                            <p class="empty-state-text">Start by adding your first cash transaction</p>
+                            <button class="btn-primary" id="addCashTransactionBtn" onclick="try { window.openCashTransactionModal(); } catch(e) { alert('Error calling function: ' + e.message + ' - Type: ' + typeof window.openCashTransactionModal); }" style="margin-top: 24px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                <span>Add Cash Transaction</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Costing View -->
+            <section class="view" id="costingView">
+                <div class="costing-container">
+                    <div class="costing-filters" id="costingFilters">
+                        <!-- Filters will be populated by JavaScript -->
+                    </div>
+                    <div class="costing-projects" id="costingProjects">
+                        <!-- Projects costing will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports View -->
+            <section class="view" id="reportsView">
+                <div class="reports-container">
+                    <div class="reports-list" id="reportsList">
+                        <!-- Reports will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section class="view" id="settingsView">
+                <div class="settings-container">
+                    <div class="settings-intro">
+                        <p class="settings-description">Configure your accounting settings, PO formats, and preferences.</p>
+                    </div>
+                    
+                    <div class="settings-grid" id="settingsGrid">
+                        <!-- Settings will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Upload Invoice Modal -->
+    <div class="modal" id="uploadInvoiceModal">
+        <div class="modal-overlay" onclick="closeUploadInvoiceModal()"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Upload Invoice</h2>
+                <button class="modal-close" onclick="closeUploadInvoiceModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="uploadInvoiceBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- View Invoice Modal -->
+    <div class="modal" id="viewInvoiceModal">
+        <div class="modal-overlay" onclick="closeViewInvoiceModal()"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="viewInvoiceTitle">Invoice Details</h2>
+                <button class="modal-close" onclick="closeViewInvoiceModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="viewInvoiceBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Request Modal -->
+    <div class="modal" id="expenseRequestModal">
+        <div class="modal-overlay" onclick="closeExpenseRequestModal()"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>New Expense Request</h2>
+                <button class="modal-close" onclick="closeExpenseRequestModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="expenseRequestBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Detail Modal (view, approve, reject, post) -->
+    <div class="modal" id="expenseDetailModal">
+        <div class="modal-overlay" onclick="closeExpenseDetailModal()"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="expenseDetailTitle">Expense Details</h2>
+                <button class="modal-close" onclick="closeExpenseDetailModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="expenseDetailBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Transaction Modal -->
+    <div class="modal" id="cashTransactionModal">
+        <div class="modal-overlay" onclick="closeCashTransactionModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="cashTransactionModalTitle">Add Cash Transaction</h2>
+                <button class="modal-close" onclick="closeCashTransactionModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="cashTransactionBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Define function IMMEDIATELY in HTML before app.js loads
+        // This ensures it's always available
+        window.openCashTransactionModal = function(transactionId) {
+            transactionId = transactionId || null;
+            console.log('=== openCashTransactionModal CALLED ===', transactionId);
+            
+            try {
+                const modal = document.getElementById('cashTransactionModal');
+                const modalBody = document.getElementById('cashTransactionBody');
+                const modalTitle = document.getElementById('cashTransactionModalTitle');
+                
+                if (!modal || !modalBody) {
+                    alert('Modal elements not found. Please refresh the page.');
+                    return;
+                }
+                
+                const isEdit = transactionId !== null;
+                // Get cashTransactions from global scope if available
+                const cashTransactions = window.cashTransactions || [];
+                const transaction = isEdit ? cashTransactions.find(function(t) { return t.id === transactionId; }) : null;
+                
+                if (modalTitle) {
+                    modalTitle.textContent = isEdit ? 'Edit Cash Transaction' : 'Add Cash Transaction';
+                }
+                
+                const projects = [
+                    'Riverside Tower',
+                    'Metro Shopping Centre',
+                    'Harbour View Apartments',
+                    'City Plaza',
+                    'Industrial Complex',
+                    'None'
+                ];
+                
+                modalBody.innerHTML = 
+                    '<form id="cashTransactionForm" onsubmit="submitCashTransaction(event, \'' + (transactionId || '') + '\')">' +
+                    '<div class="form-group">' +
+                    '<label for="cashType">Transaction Type *</label>' +
+                    '<select id="cashType" name="type" required>' +
+                    '<option value="in"' + (transaction && transaction.type === 'in' ? ' selected' : '') + '>Cash In</option>' +
+                    '<option value="out"' + (transaction && transaction.type === 'out' ? ' selected' : '') + '>Cash Out</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                    '<label for="cashAmount">Amount *</label>' +
+                    '<input type="number" id="cashAmount" name="amount" step="0.01" min="0" required value="' + (transaction ? transaction.amount : '') + '" placeholder="0.00">' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                    '<label for="cashDate">Date *</label>' +
+                    '<input type="date" id="cashDate" name="date" required value="' + (transaction ? transaction.date : new Date().toISOString().split('T')[0]) + '">' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                    '<label for="cashReason">Reason/Details *</label>' +
+                    '<textarea id="cashReason" name="reason" rows="3" required placeholder="Enter reason or details for this transaction">' + (transaction ? (transaction.reason || '') : '') + '</textarea>' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                    '<label for="cashProject">Project</label>' +
+                    '<select id="cashProject" name="project">' +
+                    projects.map(function(p) {
+                        return '<option value="' + (p === 'None' ? '' : p) + '"' + (transaction && transaction.project === p ? ' selected' : '') + '>' + p + '</option>';
+                    }).join('') +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="form-actions">' +
+                    '<button type="button" class="btn-secondary" onclick="closeCashTransactionModal()">Cancel</button>' +
+                    '<button type="submit" class="btn-primary">' + (isEdit ? 'Update' : 'Add') + ' Transaction</button>' +
+                    '</div>' +
+                    '</form>';
+                
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.zIndex = '1000';
+                modal.style.visibility = 'visible';
+                modal.style.opacity = '1';
+                
+                console.log('Modal activated');
+            } catch (error) {
+                console.error('Error opening cash transaction modal:', error);
+                alert('Error opening modal: ' + error.message);
+            }
+        };
+        
+        console.log('Function defined in HTML:', typeof window.openCashTransactionModal);
+    </script>
+    <script src="app.js"></script>
+    <script>
+        // Initialize app when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof initializeApp === 'function') {
+                    initializeApp();
+                } else {
+                    console.error('initializeApp function not found');
+                }
+            });
+        } else {
+            // DOM already loaded
+            if (typeof initializeApp === 'function') {
+                initializeApp();
+            } else {
+                console.error('initializeApp function not found');
+            }
+        }
+        
+        // After app.js loads, verify the function is still available
+        setTimeout(function() {
+            console.log('=== POST-LOAD CHECK ===');
+            console.log('Function type:', typeof window.openCashTransactionModal);
+            if (typeof window.openCashTransactionModal === 'function') {
+                console.log('SUCCESS: Function is available!');
+            } else {
+                console.error('ERROR: Function not available after app.js loaded!');
+            }
+        }, 100);
+    </script>
+</body>
+</html>
+
